@@ -90,40 +90,31 @@ def create_event(title: str, start_time: datetime, end_time: datetime,
 
 
 def schedule_listing_appointment(lead: dict, appointment_dt: datetime) -> dict:
-    """Schedule a listing appointment with the seller."""
-    end_time = appointment_dt + timedelta(hours=1, minutes=30)
-    title = f"Listing Appointment — {lead.get('first_name','')} {lead.get('last_name','')} | {lead.get('address','')}"
+    """Schedule an intro / sales appointment with the prospect."""
+    end_time = appointment_dt + timedelta(hours=1)
+    company = lead.get('address', '') or ''
+    title = f"Intro Call — {lead.get('first_name','')} {lead.get('last_name','')}" + (f" | {company}" if company else "")
     description = (
-        f"Listing presentation for {lead.get('address','')}, {lead.get('city','')}.\n"
+        f"Intro / sales meeting with {lead.get('first_name','')} {lead.get('last_name','')}.\n"
+        f"Company: {company}, {lead.get('city','')}\n"
         f"Contact: {lead.get('phone','')} | {lead.get('email','')}\n"
         f"Lead score: {lead.get('score', 'N/A')}/100\n"
-        f"Situation: {lead.get('life_event','')}"
+        f"What they need: {lead.get('life_event','')}"
     )
     attendees = [lead.get("email")] if lead.get("email") else []
     if settings.agent_email:
         attendees.append(settings.agent_email)
 
     return create_event(title, appointment_dt, end_time,
-                        location=lead.get("address",""), description=description,
-                        attendee_emails=attendees)
+                        description=description, attendee_emails=attendees)
 
 
 def schedule_follow_up(lead: dict, follow_up_dt: datetime, note: str = "") -> dict:
     """Schedule a follow-up reminder."""
     end_time = follow_up_dt + timedelta(minutes=30)
-    title = f"Follow-up — {lead.get('first_name','')} {lead.get('last_name','')} | {lead.get('address','')}"
-    return create_event(title, follow_up_dt, end_time, description=note or f"Follow up on {lead.get('address','')}")
-
-
-def schedule_open_house(listing: dict, open_house_dt: datetime, duration_hours: float = 2) -> dict:
-    """Schedule an open house."""
-    end_time = open_house_dt + timedelta(hours=duration_hours)
-    title = f"Open House — {listing.get('address','')}, {listing.get('city','')}"
-    return create_event(
-        title, open_house_dt, end_time,
-        location=listing.get("address",""),
-        description=f"List price: ${listing.get('list_price',0):,.0f}\nBeds: {listing.get('bedrooms','')}, Baths: {listing.get('bathrooms','')}"
-    )
+    who = f"{lead.get('first_name','')} {lead.get('last_name','')}".strip()
+    title = f"Follow-up — {who}" + (f" | {lead.get('address','')}" if lead.get('address') else "")
+    return create_event(title, follow_up_dt, end_time, description=note or f"Follow up with {who}")
 
 
 def get_upcoming_events(days: int = 7) -> list[dict]:

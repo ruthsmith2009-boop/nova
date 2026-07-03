@@ -11,11 +11,6 @@ from agents.lead_scorer import (
     default_cadence_for_temperature,
 )
 from agents.scripts import handle_objection, get_call_script
-from agents.research import enrich_property
-
-PROP_FIELDS = ("bedrooms", "bathrooms", "sqft", "lot_size", "year_built",
-               "last_sold_price", "last_sold_date", "estimated_value",
-               "property_enriched", "enrichment_confidence")
 
 router = APIRouter(prefix="/leads", tags=["leads"])
 
@@ -76,35 +71,9 @@ async def create_lead(lead_data: LeadCreate, db: Session = Depends(get_db)):
     lead.score_reasons = score_result.get("final_reasons", [])
     lead.temperature = suggest_temperature(lead.score)
 
-    # Auto-fill property details from the address
-    if lead.address:
-        try:
-            enriched = await enrich_property(lead.address, lead.city or "", lead.state or "")
-            for f in PROP_FIELDS:
-                if enriched.get(f) is not None:
-                    setattr(lead, f, enriched[f])
-        except Exception:
-            pass
-
     db.commit()
     db.refresh(lead)
     return {**_serialize_lead(lead), "score_details": score_result}
-
-
-@router.post("/{lead_id}/enrich")
-async def enrich_lead(lead_id: int, db: Session = Depends(get_db)):
-    """Re-run property auto-fill for a lead from its address."""
-    lead = db.query(Lead).filter(Lead.id == lead_id).first()
-    if not lead:
-        raise HTTPException(status_code=404, detail="Lead not found")
-    if not lead.address:
-        raise HTTPException(status_code=400, detail="Lead has no address to look up")
-    enriched = await enrich_property(lead.address, lead.city or "", lead.state or "")
-    for f in PROP_FIELDS:
-        if enriched.get(f) is not None:
-            setattr(lead, f, enriched[f])
-    db.commit()
-    return {"lead_id": lead_id, "enriched": enriched}
 
 
 @router.put("/{lead_id}/cadence")
@@ -460,12 +429,12 @@ async def draft_followup(lead_id: int, channel: str = "auto", db: Session = Depe
         "call": "A 3-4 sentence phone opener plus one strong question to re-engage them. Not a full script.",
     }
     prompt = (
-        f"Draft the next {channel} follow-up from a real estate agent to this lead. "
-        f"Goal: nurture the relationship and move toward a listing appointment — helpful, never pushy.\n\n"
+        f"Draft the next {channel} follow-up from a small-business owner to this lead. "
+        f"Goal: build the relationship and move toward a booked call — helpful, never pushy.\n\n"
         f"Lead: {lead.first_name} {lead.last_name}\n"
-        f"Property: {lead.address or ''} {lead.city or ''}, {lead.state or ''}\n"
+        f"Company / location: {lead.address or ''} {lead.city or ''}, {lead.state or ''}\n"
         f"Pipeline stage: {lead.stage.value if lead.stage else 'new'} | Temperature: {lead.temperature}\n"
-        f"Motivation / situation: {lead.life_event or 'unknown'}\n"
+        f"What they need / situation: {lead.life_event or 'unknown'}\n"
         f"Days since last contact: {days_since if days_since is not None else 'never contacted'}\n"
         f"Recent contact history: {history}\n\n"
         f"Format: {channel_rules.get(channel, channel_rules['text'])}\n"
@@ -473,9 +442,9 @@ async def draft_followup(lead_id: int, channel: str = "auto", db: Session = Depe
     )
     from agents.brain import think
     message = await think(prompt, system_extra=(
-        "You are ARIA, a top-producing real estate agent's assistant. You write concise, "
-        "personable outreach that sounds like a real human agent, not a template. Never invent "
-        "facts about the property or the client beyond what you are told."
+        "You are NOVA, a top-producing salesperson's assistant. You write concise, personable "
+        "outreach that sounds like a real human, not a template. Adapt to the owner's industry and "
+        "never assume real estate. Never invent facts about the lead beyond what you are told."
     ))
     return {"lead_id": lead_id, "channel": channel, "message": message.strip(),
             "days_since_contact": days_since}

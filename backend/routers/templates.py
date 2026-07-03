@@ -1,9 +1,9 @@
 """
 Message Templates — reusable email/text outreach with merge fields.
 
-Built-in starter templates (read-only) + Ruth's own (editable/deletable). `/templates/render`
-fills the merge fields ({first_name}, {address}, {agent_name}, ...) from a lead + agent settings,
-so she can paste a personalized message in seconds. ARIA does not send — it prepares the text.
+Built-in starter templates (read-only) + the user's own (editable/deletable). `/templates/render`
+fills the merge fields ({first_name}, {company}, {your_name}, ...) from a lead + business settings,
+so she can paste a personalized message in seconds. NOVA does not send — it prepares the text.
 """
 import re
 from fastapi import APIRouter, Depends, HTTPException
@@ -18,27 +18,27 @@ router = APIRouter(prefix="/templates", tags=["templates"])
 
 BUILTIN_TEMPLATES = [
     {"key": "intro_email", "name": "New Lead Intro", "channel": "email",
-     "subject": "Quick hello about {address}",
-     "body": "Hi {first_name},\n\nThis is {agent_name} with {broker}. I work with homeowners in "
-             "{city} and wanted to introduce myself. If you're ever curious what {address} could sell "
-             "for in today's market, I'm happy to put together a no-pressure estimate.\n\n"
-             "Best,\n{agent_name}\n{agent_phone}"},
+     "subject": "Quick hello from {company_name}",
+     "body": "Hi {first_name},\n\nThis is {your_name} with {company_name}. I work with businesses "
+             "and people in {city} and wanted to introduce myself. If it's ever helpful, I'd be glad "
+             "to put together a no-pressure look at how I could help — no obligation at all.\n\n"
+             "Best,\n{your_name}\n{your_phone}"},
     {"key": "follow_up_text", "name": "Follow-up Text", "channel": "text",
-     "body": "Hi {first_name}, it's {agent_name}. Just checking in — still happy to answer any "
-             "real estate questions about {city} whenever you need. {agent_phone}"},
-    {"key": "just_listed_text", "name": "Just Listed Text", "channel": "text",
-     "body": "Hi {first_name}! Just listed a great home near {city}. Want me to send details before "
-             "it hits the open market? — {agent_name}"},
-    {"key": "price_check_email", "name": "Home Value Offer", "channel": "email",
-     "subject": "What {address} is worth right now",
-     "body": "Hi {first_name},\n\nValues in {city} have shifted recently. If you'd like a current, "
-             "no-obligation estimate for {address}, just reply and I'll send one over.\n\n"
-             "{agent_name}\n{agent_phone}"},
+     "body": "Hi {first_name}, it's {your_name}. Just checking in — still happy to answer any "
+             "questions whenever you're ready. No rush at all. {your_phone}"},
+    {"key": "quick_win_text", "name": "Quick Win Text", "channel": "text",
+     "body": "Hi {first_name}! I had an idea that could save you some time. Want me to send a few "
+             "details before we hop on a quick call? — {your_name}"},
+    {"key": "value_offer_email", "name": "No-Pressure Offer", "channel": "email",
+     "subject": "A quick idea for {company}",
+     "body": "Hi {first_name},\n\nI put together a couple of ideas that might help {company}. "
+             "If you'd like a current, no-obligation walkthrough, just reply and I'll send it over.\n\n"
+             "{your_name}\n{your_phone}"},
 ]
 
-MERGE_HELP = ["{first_name}", "{last_name}", "{full_name}", "{address}", "{city}", "{state}",
-              "{zip}", "{email}", "{phone}", "{agent_name}", "{agent_phone}", "{agent_email}",
-              "{broker}"]
+MERGE_HELP = ["{first_name}", "{last_name}", "{full_name}", "{company}", "{city}", "{state}",
+              "{zip}", "{email}", "{phone}", "{your_name}", "{your_phone}", "{your_email}",
+              "{company_name}"]
 
 
 class TemplateCreate(BaseModel):
@@ -62,11 +62,17 @@ def _serialize(t: MessageTemplate) -> dict:
 
 def _merge_map(lead: Lead) -> dict:
     g = lambda a: getattr(lead, a, "") or ""
+    # A lead's company/org lives in different places depending on the source — do a best-effort pull.
+    lead_company = g("company") or g("address") or ""
     return {
         "first_name": g("first_name"), "last_name": g("last_name"),
         "full_name": f"{g('first_name')} {g('last_name')}".strip(),
-        "address": g("address"), "city": g("city"), "state": g("state") or "CA",
+        "company": lead_company, "address": g("address"),
+        "city": g("city"), "state": g("state") or "CA",
         "zip": g("zip_code"), "email": g("email"), "phone": g("phone"),
+        # The user's own business identity (kept backward-compatible with old {agent_*}/{broker} fields):
+        "your_name": settings.agent_name, "your_phone": settings.agent_phone,
+        "your_email": settings.agent_email, "company_name": settings.broker_name,
         "agent_name": settings.agent_name, "agent_phone": settings.agent_phone,
         "agent_email": settings.agent_email, "broker": settings.broker_name,
     }

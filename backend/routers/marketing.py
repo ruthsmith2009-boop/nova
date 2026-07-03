@@ -6,7 +6,6 @@ from typing import Optional
 from database import get_db, Lead, EmailLog
 from agents.marketing import write_weekly_newsletter, write_email_sequence
 from agents.email_agent import queue_email_for_approval, approve_and_send_email, send_email
-from agents.research import get_market_snapshot
 
 router = APIRouter(prefix="/marketing", tags=["marketing"])
 
@@ -60,8 +59,7 @@ async def generate_sequence(req: SequenceRequest, db: Session = Depends(get_db))
     return {"lead_id": req.lead_id, "sequence_type": req.sequence_type, "emails": sequence}
 
 
-@router.get("/newsletter/{area}")
-async def generate_newsletter(area: str):
-    market_data = await get_market_snapshot(area)
-    newsletter = await write_weekly_newsletter(area, market_data)
-    return {"area": area, "newsletter": newsletter, "market_data": market_data}
+@router.get("/newsletter/{topic}")
+async def generate_newsletter(topic: str):
+    newsletter = await write_weekly_newsletter(topic, {})
+    return {"topic": topic, "newsletter": newsletter}

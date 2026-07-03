@@ -1,5 +1,5 @@
 """
-Finance Agent — tracks all business costs (real estate + AI/tech), flags tax-deductible
+Finance Agent — tracks all business costs (core business + AI/tech), flags tax-deductible
 expenses, computes monthly burn, and generates plain-English spend summaries.
 """
 import json
@@ -8,34 +8,36 @@ from agents.brain import think, think_structured
 
 # Category sets per business segment
 CATEGORIES = {
-    "real_estate": [
-        "MLS & Association Dues", "E&O Insurance", "Marketing & Advertising",
-        "Signage & Lockboxes", "Photography & Staging", "Mileage & Auto",
-        "Client Gifts", "Office & Supplies", "Continuing Education",
-        "Transaction Coordination", "Referral & Commission Fees", "Licensing & DRE",
+    "business": [
+        "Marketing & Advertising", "Lead Data & Lists", "Insurance",
+        "Mileage & Auto", "Client Gifts", "Office & Supplies",
+        "Training & Education", "Contractors & Payroll", "Referral Fees",
+        "Licensing & Dues", "Travel & Meals",
     ],
     "ai_tech": [
         "AI APIs (Claude/OpenAI)", "Web Research (Tavily)", "Calling (Twilio/Vapi)",
-        "Hosting (Railway/Render)", "Lead Data (BatchLeads/REDX)", "Email (SendGrid)",
-        "Domains", "Software & SaaS", "Automation (Zapier)",
+        "Hosting (Railway/Render)", "Lead Data (Apollo/etc.)", "Email (SendGrid)",
+        "Domains", "Software & SaaS", "Automation (Zapier/n8n)",
     ],
     "shared": [
         "Subscriptions", "Bank & Merchant Fees", "Phone & Internet", "Accounting/Legal", "Other",
     ],
 }
 
-# The ARIA tool stack — quick-add helper so Ruth can track build costs fast.
+# The NOVA tool stack — quick-add helper so the owner can track build costs fast.
 # Amounts are EDITABLE estimates; she confirms real numbers.
-ARIA_STACK = [
+NOVA_STACK = [
     {"vendor": "Anthropic (Claude API)", "category": "AI APIs (Claude/OpenAI)", "segment": "ai_tech", "recurrence": "monthly", "amount": 50, "notes": "Estimate — usage based ($40-60/mo typical)"},
     {"vendor": "Tavily", "category": "Web Research (Tavily)", "segment": "ai_tech", "recurrence": "monthly", "amount": 0, "notes": "Free tier (1,000 searches/mo)"},
     {"vendor": "Twilio", "category": "Calling (Twilio/Vapi)", "segment": "ai_tech", "recurrence": "monthly", "amount": 5, "notes": "Number ~$1.15 + A2P ~$4 + per-min usage"},
     {"vendor": "Vapi", "category": "Calling (Twilio/Vapi)", "segment": "ai_tech", "recurrence": "monthly", "amount": 0, "notes": "Usage based (~5-9¢/min). Free credits to start"},
     {"vendor": "Railway (hosting)", "category": "Hosting (Railway/Render)", "segment": "ai_tech", "recurrence": "monthly", "amount": 5, "notes": "Hobby plan, always-on"},
-    {"vendor": "BatchLeads", "category": "Lead Data (BatchLeads/REDX)", "segment": "real_estate", "recurrence": "monthly", "amount": 0, "notes": "Confirm your plan price"},
+    {"vendor": "Apollo (lead data)", "category": "Lead Data (Apollo/etc.)", "segment": "business", "recurrence": "monthly", "amount": 0, "notes": "Confirm your plan price"},
     {"vendor": "SendGrid", "category": "Email (SendGrid)", "segment": "ai_tech", "recurrence": "monthly", "amount": 0, "notes": "Free tier (100 emails/day)"},
-    {"vendor": "divinerealtyteam.com (domain)", "category": "Domains", "segment": "shared", "recurrence": "yearly", "amount": 18, "notes": "Annual renewal"},
+    {"vendor": "Domain renewal", "category": "Domains", "segment": "shared", "recurrence": "yearly", "amount": 18, "notes": "Annual renewal"},
 ]
+# Backwards-compat alias (older imports referenced ARIA_STACK)
+ARIA_STACK = NOVA_STACK
 
 
 def monthly_equivalent(amount: float, recurrence: str) -> float:
@@ -51,7 +53,7 @@ def summarize(expenses: list[dict]) -> dict:
     now = datetime.utcnow()
     year_start = datetime(now.year, 1, 1)
 
-    by_segment = {"real_estate": 0.0, "ai_tech": 0.0, "shared": 0.0}
+    by_segment = {"business": 0.0, "ai_tech": 0.0, "shared": 0.0}
     by_category = {}
     monthly_burn = 0.0
     ytd_total = 0.0
@@ -98,17 +100,18 @@ def summarize(expenses: list[dict]) -> dict:
 async def ai_categorize(description: str, amount: float = 0) -> dict:
     """Suggest category, segment, and deductibility from a free-text description."""
     result = await think_structured(
-        f"""Categorize this business expense for a CA real estate broker who also builds AI tools.
+        f"""Categorize this business expense for a small-business owner who runs a sales/service
+business and also uses AI tools.
 
 Expense: "{description}" (${amount})
 
-Segments: real_estate, ai_tech, shared.
-Real-estate categories: {CATEGORIES['real_estate']}
+Segments: business, ai_tech, shared.
+Business categories: {CATEGORIES['business']}
 AI/tech categories: {CATEGORIES['ai_tech']}
 Shared categories: {CATEGORIES['shared']}
 
 Return JSON:
-{{"segment": "real_estate|ai_tech|shared", "category": "exact category from the lists",
+{{"segment": "business|ai_tech|shared", "category": "exact category from the lists",
   "is_tax_deductible": true, "reason": "1 short sentence"}}""",
         use_haiku=True,
     )
@@ -122,17 +125,17 @@ Return JSON:
 async def monthly_report(expenses: list[dict], summary: dict) -> str:
     """Plain-English spend summary + insights as Ruth's finance advisor."""
     return await think(
-        f"""You are Ruth Smith's finance advisor. Summarize her business spending clearly and
+        f"""You are the owner's finance advisor. Summarize the business spending clearly and
 honestly. Be direct, like a sharp bookkeeper — flag anything notable.
 
 Summary data: {json.dumps(summary, indent=2)}
 
 Write a short report (~250 words):
 1. Total monthly recurring burn + what's driving it
-2. Real estate vs AI/tech split — what it says about where money is going
-3. Tax-deductible total so far (note: not tax advice, confirm with her CPA)
+2. Core-business vs AI/tech split — what it says about where money is going
+3. Tax-deductible total so far (note: not tax advice, confirm with a CPA)
 4. 2-3 specific observations or money-saving opportunities
-5. One encouraging note if she's keeping costs lean while building
+5. One encouraging note if costs are kept lean while building
 
 Tone: practical, supportive, no fluff.""",
     )

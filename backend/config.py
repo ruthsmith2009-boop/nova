@@ -35,7 +35,7 @@ class Settings(BaseSettings):
     agent_phone: str = "(408) 555-0100"
     agent_email: str = "aiwithruth@gmail.com"
 
-    primary_market: str = "San Jose & Santa Clara County, CA — Bay Area (serves all US markets)"
+    primary_market: str = "United States (any industry)"
     openai_api_key: Optional[str] = None
 
     # Facebook / Instagram (Meta Graph API)
@@ -66,10 +66,8 @@ class Settings(BaseSettings):
     # Public base URL for receiving call webhooks (e.g. ngrok or deployed domain)
     public_base_url: Optional[str] = None
 
-    # ── Paid lead-data providers (optional — for verified leads w/ phone numbers) ──
-    redx_api_key: Optional[str] = None
-    batchleads_api_key: Optional[str] = None
-    propstream_api_key: Optional[str] = None
+    # ── Paid lead-data providers (optional — for verified business contacts w/ emails & phones) ──
+    apollo_api_key: Optional[str] = None
 
     # Shared secret for the inbound lead webhook (Zapier). If set, callers must pass ?token=
     leadgen_webhook_token: Optional[str] = None
@@ -79,20 +77,8 @@ class Settings(BaseSettings):
     aria_username: Optional[str] = None
     aria_password: Optional[str] = None
 
-    # ── Document storage (3-year broker compliance) ──
-    # Where uploaded compliance docs are stored. On Railway set DOCUMENTS_DIR=/data/documents
-    # (the persistent volume). Blank → auto: /data/documents if /data exists, else ./data/documents.
-    documents_dir: Optional[str] = None
     # External storage connectors (optional — connect later with the user's accounts):
     dropbox_access_token: Optional[str] = None
-    skyslope_api_key: Optional[str] = None
-    glide_api_key: Optional[str] = None
-
-    # ── Transaction / e-sign / MLS integrations (scaffolding — connect later) ──
-    docusign_api_key: Optional[str] = None
-    mls_api_key: Optional[str] = None          # e.g. RESO Web API / Bridge / SimplyRETS
-    zipforms_api_key: Optional[str] = None
-    disclosures_api_key: Optional[str] = None  # Glide / Disclosures.io
 
     def model_post_init(self, __context) -> None:
         # On Railway the public URL is provided automatically as

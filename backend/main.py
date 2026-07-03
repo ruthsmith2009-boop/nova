@@ -13,14 +13,14 @@ from fastapi.responses import FileResponse, Response
 
 from database import create_tables
 from routers import (
-    leads, market, listings, marketing, calendar, social, calling, leadgen, finance,
-    scripts, documents, team, integrations, forms, templates, coach, compliance,
+    leads, marketing, calendar, social, calling, leadgen, finance,
+    scripts, team, integrations, templates, coach, compliance,
 )
 from config import settings
 
 app = FastAPI(
     title="NOVA — AI Assistant for Small Business",
-    description="AI-powered listing agent for Santa Clara County",
+    description="AI sales assistant for any small business that generates leads",
     version="1.0.0"
 )
 
@@ -69,8 +69,6 @@ async def basic_auth(request: Request, call_next):
 
 # Include all routers
 app.include_router(leads.router)
-app.include_router(market.router)
-app.include_router(listings.router)
 app.include_router(marketing.router)
 app.include_router(calendar.router)
 app.include_router(social.router)
@@ -78,10 +76,8 @@ app.include_router(calling.router)
 app.include_router(leadgen.router)
 app.include_router(finance.router)
 app.include_router(scripts.router)
-app.include_router(documents.router)
 app.include_router(team.router)
 app.include_router(integrations.router)
-app.include_router(forms.router)
 app.include_router(templates.router)
 app.include_router(coach.router)
 app.include_router(compliance.router)
@@ -100,8 +96,8 @@ async def startup():
     from agents.scheduler import scheduler_loop
     asyncio.create_task(scheduler_loop())
     print(f"✅ NOVA — AI Assistant for Small Business started")
-    print(f"   Agent: {settings.agent_name} | {settings.broker_name}")
-    print(f"   Market: {settings.primary_market}")
+    print(f"   Owner: {settings.agent_name} | {settings.broker_name}")
+    print(f"   Focus: Universal sales & lead generation (any industry)")
     print(f"   Auto-hunt scheduler: running")
     print(f"   API docs: http://localhost:8000/docs")
 

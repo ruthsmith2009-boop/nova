@@ -197,7 +197,7 @@
           <div class="card-header">
             <span class="card-title">All Leads</span>
             <div style="display:flex;gap:8px;flex-wrap:wrap">
-              <input id="lead-search" oninput="filterLeads()" placeholder="🔍 Search name, address, city…" style="width:auto;padding:6px 10px;font-size:13px;min-width:200px">
+              <input id="lead-search" oninput="filterLeads()" placeholder="🔍 Search name, company, city…" style="width:auto;padding:6px 10px;font-size:13px;min-width:200px">
               <select id="temp-filter" onchange="filterLeads()" style="width:auto;padding:6px 10px;font-size:13px">
                 <option value="">All Temps</option>
                 <option value="hot">🔥 Hot</option>
@@ -210,9 +210,9 @@
                 <option value="new">New</option>
                 <option value="contacted">Contacted</option>
                 <option value="appointment_set">Appointment Set</option>
-                <option value="listing_active">Active Listing</option>
-                <option value="under_contract">Under Contract</option>
-                <option value="closed">Closed</option>
+                <option value="listing_active">Proposal Sent</option>
+                <option value="under_contract">Negotiating</option>
+                <option value="closed">Won</option>
               </select>
               <button class="btn btn-ghost" onclick="saveSmartList()">💾 Save View</button>
               <button class="btn btn-ghost" onclick="exportLeadsCSV()">⬇ Export CSV</button>
@@ -235,7 +235,7 @@
             <span class="card-title">📞 Daily Call List</span>
             <span id="call-list-date" style="font-size:13px;color:var(--muted)"></span>
           </div>
-          <p style="font-size:13px;color:var(--muted);margin-bottom:16px">AI-ranked by sell probability. Highest motivation leads first.</p>
+          <p style="font-size:13px;color:var(--muted);margin-bottom:16px">AI-ranked by close probability. Hottest, most reachable leads first.</p>
           <button class="btn btn-primary" onclick="renderCallList()">🔄 Refresh List</button>
         </div>
         <div id="call-list-container"></div>
@@ -247,11 +247,11 @@
           <div class="card-header"><span class="card-title">Import Leads from CSV / Excel</span></div>
           <p style="font-size:14px;color:var(--muted);margin-bottom:20px">
             Upload any CSV or Excel file with lead data. NOVA will automatically map columns,
-            score every lead by sell probability, and rank them for your call list.
+            score every lead by close probability, and rank them for your call list.
           </p>
           <div class="alert alert-info" style="margin-bottom:20px">
-            <strong>Accepted columns (flexible naming):</strong> first_name, last_name, email, phone, address,
-            city, zip, years_owned, absentee, expired, days_on_market, life_event, source
+            <strong>Accepted columns (flexible naming):</strong> first_name, last_name, email, phone, company,
+            city, zip, title, industry, need, life_event, source
           </div>
           <div class="upload-zone" onclick="document.getElementById('lead-file').click()"
                ondragover="event.preventDefault();this.classList.add('drag-over')"
@@ -277,13 +277,13 @@
             <div id="exp-alert"></div>
             <div class="grid-2">
               <div class="form-group"><label>Amount ($)</label><input id="exp-amount" type="number" step="0.01" placeholder="49.00"></div>
-              <div class="form-group"><label>Vendor</label><input id="exp-vendor" placeholder="Anthropic, MLS, etc."></div>
+              <div class="form-group"><label>Vendor</label><input id="exp-vendor" placeholder="Anthropic, Apollo, etc."></div>
             </div>
             <div class="form-group"><label>Description</label><input id="exp-desc" placeholder="What was it for?"></div>
             <div class="grid-2">
               <div class="form-group"><label>Business</label>
                 <select id="exp-segment">
-                  <option value="real_estate">🏡 Real Estate</option>
+                  <option value="business">🏢 Business</option>
                   <option value="ai_tech">🤖 AI / Tech</option>
                   <option value="shared">🔗 Shared</option>
                 </select>
@@ -310,8 +310,8 @@
         <div class="card">
           <div class="card-header"><span class="card-title">All Expenses</span>
             <select id="exp-filter" onchange="loadFinance()" style="width:auto;padding:6px 10px;font-size:13px">
-              <option value="">All Business</option>
-              <option value="real_estate">🏡 Real Estate</option>
+              <option value="">All</option>
+              <option value="business">🏢 Business</option>
               <option value="ai_tech">🤖 AI / Tech</option>
               <option value="shared">🔗 Shared</option>
             </select>
@@ -324,25 +324,23 @@
       <div id="page-leadgen" class="page">
         <div class="card" style="margin-bottom:20px">
           <div class="card-header"><span class="card-title">🎯 Lead Generator</span></div>
-          <p style="font-size:13px;color:var(--muted);margin-bottom:16px">NOVA scans public sources for real leads, scores them, and drops them into your CRM. It never invents fake names or numbers — missing contact info is flagged "needs skip trace."</p>
+          <p style="font-size:13px;color:var(--muted);margin-bottom:16px">NOVA scans public sources for real business prospects, scores them, and drops them into your CRM. It never invents fake names or numbers — missing contact info is flagged "needs research."</p>
           <div class="grid-3">
             <div class="form-group">
               <label>What to find</label>
               <select id="lg-type">
-                <option value="seller_leads">🏡 Seller / Listing Leads</option>
-                <option value="fsbo">🏷️ FSBO (Zillow / Redfin)</option>
-                <option value="expired_fsbo">🔥 Expired &amp; FSBO</option>
-                <option value="distressed">⚠️ Distressed / Motivated (Batchleads)</option>
-                <option value="ai_service_clients">💼 AI-Service Clients (SaaS)</option>
+                <option value="ideal_clients">🎯 Ideal Clients (by niche)</option>
+                <option value="local_businesses">🏢 Local Businesses</option>
+                <option value="referral_partners">🤝 Referral Partners</option>
               </select>
             </div>
             <div class="form-group">
               <label>City / Area</label>
               <input id="lg-city" list="lg-city-list" placeholder="Any US city — e.g. Austin, Miami, San Jose" value="San Jose">
               <datalist id="lg-city-list">
-                <option>Los Gatos</option><option>Saratoga</option><option>Cupertino</option>
-                <option>Willow Glen</option><option>Sunnyvale</option><option>Campbell</option>
-                <option>San Jose</option><option>Bay Area</option>
+                <option>San Jose</option><option>San Francisco</option><option>Austin</option>
+                <option>Miami</option><option>Dallas</option><option>Phoenix</option>
+                <option>Bay Area</option>
               </datalist>
             </div>
             <div class="form-group">
@@ -355,14 +353,12 @@
               <label>Data Source</label>
               <select id="lg-provider">
                 <option value="tavily">Free Web Scan (Tavily)</option>
-                <option value="redx">REDX (paid)</option>
-                <option value="batchleads">BatchLeads (paid)</option>
-                <option value="propstream">PropStream (paid)</option>
+                <option value="apollo">Apollo (paid)</option>
               </select>
             </div>
-            <div class="form-group" id="lg-niche-wrap" style="display:none">
-              <label>Niche (for AI-service clients)</label>
-              <input id="lg-niche" placeholder="e.g. mortgage brokers, med spas, insurance agents">
+            <div class="form-group" id="lg-niche-wrap">
+              <label>Niche / industry</label>
+              <input id="lg-niche" placeholder="e.g. med spas, dentists, contractors, law firms">
             </div>
             <div class="form-group" style="display:flex;align-items:flex-end">
               <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-weight:600">
@@ -380,7 +376,7 @@
             <span class="card-title">⏰ Scheduled Auto-Hunts</span>
             <button class="btn btn-accent" onclick="createSchedule()">＋ Schedule This Hunt</button>
           </div>
-          <p style="font-size:13px;color:var(--muted);margin-bottom:16px">Set a hunt to run on its own — daily, weekly, or hourly. NOVA scans, scores, and adds new leads to your CRM automatically (duplicates skipped). Uses the <strong>What to find / City / State / Data Source</strong> selected above. Distressed hunts pair with your Batchleads lists.</p>
+          <p style="font-size:13px;color:var(--muted);margin-bottom:16px">Set a hunt to run on its own — daily, weekly, or hourly. NOVA scans, scores, and adds new prospects to your CRM automatically (duplicates skipped). Uses the <strong>What to find / City / State / Niche / Data Source</strong> selected above.</p>
           <div class="form-group" style="max-width:220px">
             <label>Run every</label>
             <select id="lg-frequency">
@@ -420,10 +416,10 @@
             <div class="card-header"><span class="card-title">Create AI Calling Campaign</span></div>
             <p style="font-size:13px;color:var(--muted);margin-bottom:16px">Describe your goal — NOVA writes the AI calling script, places the calls, and logs every result back to your CRM.</p>
             <div id="campaign-alert"></div>
-            <div class="form-group"><label>Campaign Name</label><input id="camp-name" placeholder="Expired Listings — Willow Glen"></div>
-            <div class="form-group"><label>Goal of the Calls</label><input id="camp-goal" placeholder="Qualify the seller and book a listing appointment"></div>
-            <div class="form-group"><label>Offer / Service to Introduce</label><input id="camp-offer" placeholder="A free home valuation and listing consultation"></div>
-            <div class="form-group"><label>Qualifying Questions (one per line)</label><textarea id="camp-questions" rows="4" placeholder="Are you thinking of selling in the next 6 months?&#10;Have you had your home valued recently?&#10;What's prompting the move?"></textarea></div>
+            <div class="form-group"><label>Campaign Name</label><input id="camp-name" placeholder="New leads — San Jose med spas"></div>
+            <div class="form-group"><label>Goal of the Calls</label><input id="camp-goal" placeholder="Qualify the prospect and book a quick intro call"></div>
+            <div class="form-group"><label>Offer / Service to Introduce</label><input id="camp-offer" placeholder="A free, no-pressure consultation"></div>
+            <div class="form-group"><label>Qualifying Questions (one per line)</label><textarea id="camp-questions" rows="4" placeholder="Are you looking to grow in the next few months?&#10;What's your biggest bottleneck right now?&#10;Who handles this decision on your team?"></textarea></div>
             <div class="grid-3">
               <div class="form-group"><label>Call Window Start</label><input id="camp-start" type="time" value="09:00"></div>
               <div class="form-group"><label>Call Window End</label><input id="camp-end" type="time" value="18:00"></div>
@@ -499,127 +495,6 @@
         </div>
       </div>
 
-      <!-- LISTINGS -->
-      <div id="page-listings" class="page">
-        <div class="card" style="margin-bottom:20px">
-          <div class="card-header"><span class="card-title">My Listings</span><button class="btn btn-accent" onclick="showAddListing()">+ New Listing</button></div>
-          <div id="listings-table"><div class="loading-overlay"><div class="spinner"></div></div></div>
-        </div>
-      </div>
-
-      <!-- DOCUMENTS -->
-      <div id="page-documents" class="page">
-        <div class="card" style="margin-bottom:20px">
-          <div class="card-header"><span class="card-title">Generate California Documents</span></div>
-          <div class="alert alert-warning" style="margin-bottom:20px">
-            NOVA auto-fills documents using AI and property data. All documents require review
-            and signature by licensed parties. RLA must use official C.A.R. forms.
-          </div>
-          <div id="doc-alert"></div>
-          <div class="grid-2">
-            <div class="form-group"><label>Property Address *</label><input id="doc-address" placeholder="123 Oak Street"></div>
-            <div class="form-group"><label>City</label><input id="doc-city" placeholder="Los Gatos"></div>
-          </div>
-          <div class="grid-2">
-            <div class="form-group"><label>List Price *</label><input id="doc-price" type="number" placeholder="1495000"></div>
-            <div class="form-group"><label>Seller Full Name</label><input id="doc-seller" placeholder="Jane & John Smith"></div>
-          </div>
-          <div class="grid-2">
-            <div class="form-group"><label>Bedrooms</label><input id="doc-beds" type="number" placeholder="3" value="3"></div>
-            <div class="form-group"><label>Bathrooms</label><input id="doc-baths" type="number" step="0.5" placeholder="2" value="2"></div>
-          </div>
-          <div class="alert alert-info" style="margin-bottom:16px">
-            <strong>Documents generated:</strong> RLA (Listing Agreement), TDS (Transfer Disclosure Statement),
-            Estimated Net Sheet. SPQ, AVID, NHD, Lead Paint flagged for completion.
-          </div>
-          <button class="btn btn-primary" onclick="generateDocuments()">Generate Document Package</button>
-          <div id="doc-result" style="margin-top:20px"></div>
-        </div>
-
-        <div class="card" style="margin-bottom:20px">
-          <div class="card-header"><span class="card-title">🗄️ Document Vault — 3-Year Compliance</span></div>
-          <p style="font-size:13px;color:var(--muted);margin-bottom:16px">Store signed contracts, disclosures, and transaction records. Each upload is kept for <strong>3 years</strong> (California broker record-retention requirement) and protected from accidental deletion during that window. Files are stored privately — never on GitHub.</p>
-          <div class="grid-3">
-            <div class="form-group"><label>File</label><input type="file" id="dv-file"></div>
-            <div class="form-group"><label>Type</label>
-              <select id="dv-category">
-                <option>Contract</option><option>RLA (Listing Agreement)</option><option>TDS (Disclosure)</option>
-                <option>Disclosure</option><option>Inspection</option><option>ID / License</option><option>Other</option>
-              </select>
-            </div>
-            <div class="form-group" style="display:flex;align-items:flex-end"><button class="btn btn-accent" onclick="uploadDocument()" style="width:100%">⬆ Upload to Vault</button></div>
-          </div>
-          <div class="form-group"><label>Notes (optional)</label><input id="dv-notes" placeholder="e.g. 123 Oak St — signed listing agreement"></div>
-          <div id="dv-alert"></div>
-          <div style="display:flex;align-items:center;gap:10px;margin:14px 0 4px">
-            <label style="margin:0">Filter by type</label>
-            <select id="dv-filter" onchange="loadDocuments()" style="width:auto;padding:6px 10px">
-              <option value="">All documents</option>
-              <option>Contract</option><option>RLA (Listing Agreement)</option><option>TDS (Disclosure)</option>
-              <option>Disclosure</option><option>Inspection</option><option>ID / License</option><option>Other</option>
-            </select>
-            <span id="dv-count" style="font-size:12px;color:var(--muted)"></span>
-          </div>
-          <div id="documents-list" style="margin-top:8px"></div>
-
-          <div style="margin-top:22px;border-top:1px solid var(--border);padding-top:16px">
-            <div style="font-weight:700;font-size:15px;margin-bottom:6px">🔗 Connect External Storage (optional)</div>
-            <p style="font-size:13px;color:var(--muted);margin-bottom:12px">Keep an off-site copy in the tools brokers already use. Connecting these needs your account — we'll set it up together when you're ready.</p>
-            <div id="doc-integrations"></div>
-          </div>
-        </div>
-      </div>
-
-      <!-- TRANSACTION FORMS -->
-      <div id="page-forms" class="page">
-        <div class="card" style="margin-bottom:20px">
-          <div class="card-header"><span class="card-title">📝 Transaction Forms</span></div>
-          <p style="font-size:13px;color:var(--muted);margin-bottom:16px">Pick a lead and NOVA fills their contact + property details into every standard agent form, so you don't re-type. Copy each into your official C.A.R. form in zipForms/DocuSign.</p>
-          <div class="grid-3">
-            <div class="form-group"><label>Lead</label><select id="fp-lead"></select></div>
-            <div class="form-group"><label>Buyer name (for RPA, optional)</label><input id="fp-buyer" placeholder="Buyer full name"></div>
-            <div class="form-group" style="display:flex;align-items:flex-end"><button class="btn btn-accent" onclick="prepareForms()" style="width:100%">📝 Prepare Forms</button></div>
-          </div>
-          <div id="fp-result"></div>
-        </div>
-      </div>
-
-      <!-- MARKET RESEARCH -->
-      <div id="page-market" class="page">
-        <div class="grid-2" style="margin-bottom:20px">
-          <div class="card">
-            <div class="card-header"><span class="card-title">Market Snapshot</span></div>
-            <div class="form-group">
-              <label>City / Neighborhood / Area (anywhere in the US)</label>
-              <input id="market-area" list="area-suggestions" placeholder="e.g. San Jose, Austin TX, Scottsdale AZ…" value="San Jose">
-              <datalist id="area-suggestions">
-                <option>San Jose</option><option>Willow Glen</option><option>Los Gatos</option>
-                <option>Saratoga</option><option>Cupertino</option><option>Sunnyvale</option>
-                <option>Campbell</option><option>Almaden Valley</option><option>Evergreen</option>
-              </datalist>
-            </div>
-            <button class="btn btn-primary" onclick="runMarketSnapshot()">Pull Live Data</button>
-          </div>
-          <div class="card">
-            <div class="card-header"><span class="card-title">Run a CMA</span></div>
-            <div id="cma-alert"></div>
-            <div class="form-group"><label>Property Address *</label><input id="cma-address" placeholder="456 Elm Ave"></div>
-            <div class="grid-2">
-              <div class="form-group"><label>City</label><input id="cma-city" placeholder="San Jose"></div>
-              <div class="form-group"><label>State</label><input id="cma-state" placeholder="CA" maxlength="2"></div>
-            </div>
-            <div class="grid-3">
-              <div class="form-group"><label>Beds</label><input id="cma-beds" type="number" placeholder="3"></div>
-              <div class="form-group"><label>Baths</label><input id="cma-baths" type="number" step="0.5" placeholder="2"></div>
-              <div class="form-group"><label>Sqft</label><input id="cma-sqft" type="number" placeholder="1600"></div>
-            </div>
-            <button class="btn btn-primary" onclick="runCMA()">Run CMA</button>
-          </div>
-        </div>
-        <div id="market-result"></div>
-        <div id="cma-result"></div>
-      </div>
-
       <!-- SOCIAL MEDIA -->
       <div id="page-social" class="page">
         <div class="tabs" id="social-tabs">
@@ -638,23 +513,23 @@
               <div class="form-group">
                 <label>Content Type</label>
                 <select id="soc-type">
-                  <option value="listing">🏡 New Listing</option>
-                  <option value="just_sold">🎉 Just Sold</option>
-                  <option value="open_house">🚪 Open House</option>
-                  <option value="market_update">📊 Market Update</option>
-                  <option value="tip">💡 Real Estate Tip</option>
-                  <option value="neighborhood">🏘 Neighborhood Spotlight</option>
+                  <option value="new_offer">🚀 New Offer / Service</option>
+                  <option value="customer_win">🎉 Customer Win</option>
+                  <option value="promo">🏷️ Promo / Special</option>
+                  <option value="industry_update">📊 Industry Update</option>
+                  <option value="tip">💡 Helpful Tip</option>
+                  <option value="spotlight">🏢 Business Spotlight</option>
                   <option value="testimonial">⭐ Client Testimonial</option>
                   <option value="custom">✏ Custom</option>
                 </select>
               </div>
               <div class="form-group">
                 <label>Subject / Key Details</label>
-                <textarea id="soc-subject" rows="3" placeholder="e.g. Just listed — 3bd/2ba in Los Gatos at $1.495M. Stunning kitchen remodel, top-rated schools, sold in 6 days last comp."></textarea>
+                <textarea id="soc-subject" rows="3" placeholder="e.g. New: we set up AI phone answering that books jobs 24/7. Saves owners hours a week and captures every missed call."></textarea>
               </div>
               <div class="form-group">
                 <label>Image URL (optional — for Instagram)</label>
-                <input id="soc-image" type="url" placeholder="https://... (Dropbox, Google Drive, or MLS photo link)">
+                <input id="soc-image" type="url" placeholder="https://... (Dropbox, Google Drive, or photo link)">
               </div>
               <div id="soc-generate-alert"></div>
               <button class="btn btn-accent" style="width:100%" onclick="generateSocialPosts()">✨ Generate All Platform Posts</button>
@@ -696,17 +571,17 @@
               <div class="form-group">
                 <label>Video Type</label>
                 <select id="vid-type">
-                  <option value="market_update">Market Update</option>
-                  <option value="listing_tour">Listing Tour</option>
-                  <option value="neighborhood_guide">Neighborhood Guide</option>
-                  <option value="tips">Real Estate Tips</option>
+                  <option value="industry_update">Industry Update</option>
+                  <option value="product_demo">Product / Service Demo</option>
+                  <option value="how_to">How-To / Guide</option>
+                  <option value="tips">Quick Tips</option>
                   <option value="q_and_a">Q&amp;A / FAQ</option>
                 </select>
               </div>
             </div>
             <div class="form-group">
               <label>Topic</label>
-              <input id="vid-topic" placeholder="e.g. Why Los Gatos homes are selling in under 7 days right now">
+              <input id="vid-topic" placeholder="e.g. 3 ways local businesses lose customers to missed calls (and the fix)">
             </div>
             <div class="form-group">
               <label>Duration (minutes)</label>
@@ -791,13 +666,10 @@
         </div>
         <div id="mkt-newsletter">
           <div class="card" style="margin-bottom:20px">
-            <div class="card-header"><span class="card-title">Weekly Market Newsletter</span></div>
+            <div class="card-header"><span class="card-title">Weekly Newsletter</span></div>
             <div class="form-group">
-              <label>Neighborhood</label>
-              <select id="newsletter-area">
-                <option>Los Gatos</option><option>Saratoga</option><option>Cupertino</option>
-                <option>Willow Glen</option><option>Sunnyvale</option><option>Campbell</option>
-              </select>
+              <label>Topic / theme for this week</label>
+              <input id="newsletter-area" placeholder="e.g. 5 ways to get more booked jobs this month" />
             </div>
             <button class="btn btn-primary" onclick="generateNewsletter()">Generate Newsletter</button>
           </div>
@@ -849,11 +721,11 @@
           <p style="font-size:13px;color:var(--muted);margin-bottom:16px">Save your own scripts — type one in or upload a text file (.txt / .md). Your scripts can be deleted anytime; the built-in coach scripts are read-only.</p>
           <div class="grid-2">
             <div>
-              <div class="form-group"><label>Title</label><input id="sc-title" placeholder="My FSBO opener"></div>
+              <div class="form-group"><label>Title</label><input id="sc-title" placeholder="My cold-call opener"></div>
               <div class="grid-2">
-                <div class="form-group"><label>Author (optional)</label><input id="sc-author" placeholder="e.g. Tom Ferry"></div>
+                <div class="form-group"><label>Author (optional)</label><input id="sc-author" placeholder="e.g. Chris Voss"></div>
                 <div class="form-group"><label>Category</label>
-                  <select id="sc-category"><option>Custom</option><option>Expired</option><option>FSBO</option><option>Objection</option><option>Buyer</option><option>Prospecting</option></select>
+                  <select id="sc-category"><option>Custom</option><option>Cold Outreach</option><option>Follow-Up</option><option>Objection</option><option>Discovery</option><option>Closing</option></select>
                 </div>
               </div>
               <div class="form-group"><label>Script text</label><textarea id="sc-content" rows="5" placeholder="Paste or type your script here…"></textarea></div>
@@ -873,7 +745,7 @@
       <div id="page-templates" class="page">
         <div class="card" style="margin-bottom:20px">
           <div class="card-header"><span class="card-title">📧 Use a Template</span></div>
-          <p style="font-size:13px;color:var(--muted);margin-bottom:14px">Pick a template and a lead — NOVA fills in their name, address, etc. Copy the ready message into your email or texts. (NOVA prepares the text; it doesn't send.)</p>
+          <p style="font-size:13px;color:var(--muted);margin-bottom:14px">Pick a template and a lead — NOVA fills in their name, company, etc. Copy the ready message into your email or texts. (NOVA prepares the text; it doesn't send.)</p>
           <div class="grid-3">
             <div class="form-group"><label>Template</label><select id="tpl-pick"></select></div>
             <div class="form-group"><label>Lead</label><select id="tpl-lead"></select></div>
@@ -885,10 +757,10 @@
         <div class="card" style="margin-bottom:20px">
           <div class="card-header"><span class="card-title">➕ Create a Template</span></div>
           <div class="grid-2">
-            <div class="form-group"><label>Name</label><input id="tpl-name" placeholder="e.g. Just Listed Text"></div>
+            <div class="form-group"><label>Name</label><input id="tpl-name" placeholder="e.g. Quick Win Text"></div>
             <div class="form-group"><label>Channel</label><select id="tpl-channel"><option value="email">Email</option><option value="text">Text</option></select></div>
           </div>
-          <div class="form-group"><label>Subject (email only)</label><input id="tpl-subject" placeholder="Quick hello about {address}"></div>
+          <div class="form-group"><label>Subject (email only)</label><input id="tpl-subject" placeholder="Quick hello from {company_name}"></div>
           <div class="form-group"><label>Message</label><textarea id="tpl-body" rows="5" placeholder="Hi {first_name}, ..."></textarea></div>
           <div id="tpl-merge" style="font-size:12px;color:var(--muted);margin-bottom:10px"></div>
           <div id="tpl-alert"></div>
@@ -904,13 +776,13 @@
           <div class="card-header"><span class="card-title">👔 Team</span></div>
           <p style="font-size:13px;color:var(--muted);margin-bottom:16px">Add the people on your team so you can assign leads and (later) give them their own logins. Roles help with a manager overview.</p>
           <div class="grid-3">
-            <div class="form-group"><label>Name</label><input id="tm-name" placeholder="Jane Agent"></div>
-            <div class="form-group"><label>Email</label><input id="tm-email" placeholder="jane@brokerage.com"></div>
+            <div class="form-group"><label>Name</label><input id="tm-name" placeholder="Jane Smith"></div>
+            <div class="form-group"><label>Email</label><input id="tm-email" placeholder="jane@yourcompany.com"></div>
             <div class="form-group"><label>Phone</label><input id="tm-phone" placeholder="(408) 555-0123"></div>
           </div>
           <div class="grid-3">
             <div class="form-group"><label>Role</label>
-              <select id="tm-role"><option value="agent">Agent</option><option value="manager">Manager</option><option value="transaction_coordinator">Transaction Coordinator</option><option value="admin">Admin</option></select>
+              <select id="tm-role"><option value="sales_rep">Sales Rep</option><option value="manager">Manager</option><option value="assistant">Assistant</option><option value="admin">Admin</option></select>
             </div>
             <div class="form-group" style="grid-column:span 2;display:flex;align-items:flex-end"><button class="btn btn-accent" onclick="addTeamMember()">＋ Add Team Member</button></div>
           </div>
@@ -923,8 +795,8 @@
       <div id="page-coach" class="page">
         <div class="card" style="margin-bottom:20px">
           <div class="card-header"><span class="card-title">🎓 Coach Me</span></div>
-          <p style="font-size:13px;color:var(--muted);margin-bottom:14px">Ask NOVA anything about a deal, an objection, pricing, or what to say next — she coaches you like a top broker mentor.</p>
-          <div class="form-group"><label>Your question</label><textarea id="coach-q" rows="3" placeholder="e.g. How do I get a seller to drop their price without losing the listing?"></textarea></div>
+          <p style="font-size:13px;color:var(--muted);margin-bottom:14px">Ask NOVA anything about a deal, an objection, pricing, or what to say next — she coaches you like a top sales mentor.</p>
+          <div class="form-group"><label>Your question</label><textarea id="coach-q" rows="3" placeholder="e.g. How do I get a prospect to commit without being pushy?"></textarea></div>
           <button class="btn btn-primary" onclick="askCoach()">Ask Coach</button>
           <div id="coach-prompts" style="display:flex;gap:6px;flex-wrap:wrap;margin-top:12px"></div>
           <div id="coach-answer" style="margin-top:16px"></div>
@@ -935,9 +807,9 @@
       <div id="page-compliance" class="page">
         <div class="card" style="margin-bottom:20px">
           <div class="card-header"><span class="card-title">⚖️ Compliance Check</span></div>
-          <p style="font-size:13px;color:var(--muted);margin-bottom:14px">Paste a listing description, email, text, or flyer and NOVA's compliance sub-agent flags likely Fair Housing, disclosure, and advertising issues — with fixes. <strong>Safety check, not legal advice</strong> — have your broker/attorney review anything serious.</p>
+          <p style="font-size:13px;color:var(--muted);margin-bottom:14px">Paste an ad, email, text, or flyer and NOVA's compliance sub-agent flags likely advertising, claims, CAN-SPAM, and TCPA issues — with fixes. <strong>Safety check, not legal advice</strong> — have an attorney review anything serious.</p>
           <div class="grid-2">
-            <div class="form-group"><label>Type</label><select id="cmp-kind"><option value="listing">Listing description</option><option value="email">Email</option><option value="text">Text message</option><option value="flyer">Flyer / ad</option><option value="general">Other</option></select></div>
+            <div class="form-group"><label>Type</label><select id="cmp-kind"><option value="ad">Ad / marketing copy</option><option value="email">Email</option><option value="text">Text message</option><option value="flyer">Flyer / ad</option><option value="general">Other</option></select></div>
           </div>
           <div class="form-group"><label>Content to check</label><textarea id="cmp-text" rows="5" placeholder="Paste the text here…"></textarea></div>
           <button class="btn btn-primary" onclick="runCompliance()">Check Compliance</button>
@@ -961,16 +833,13 @@
 <script src="/static/js/app.js?v=nova5"></script>
 <script>
 // Extra page navigation entries
-const extraPages = ['automations','upload','listings','documents','marketing','scripts','team','integrations','forms','templates','coach','compliance'];
+const extraPages = ['automations','upload','marketing','scripts','team','integrations','templates','coach','compliance'];
 extraPages.forEach(p => {
   // Make nav items work without renderers
   if (!pageRenderers[p]) pageRenderers[p] = () => {
-    if (p === 'listings') loadListings();
     if (p === 'scripts') loadScripts();
-    if (p === 'documents') { loadDocuments(); loadDocIntegrations(); }
     if (p === 'team') loadTeam();
     if (p === 'integrations') loadIntegrations();
-    if (p === 'forms') loadFormsPage();
     if (p === 'templates') loadTemplates();
     if (p === 'coach') loadCoachPrompts();
   };
@@ -1015,7 +884,7 @@ async function runCompliance() {
     el.innerHTML = `
       <div class="card" style="box-shadow:none;border:1px solid var(--border)">
         <div style="margin-bottom:8px"><span class="badge ${badge}">${(r.overall||'').replace('_',' ')}</span>
-          ${r.fair_housing_ok?'<span class="badge badge-a" style="margin-left:6px">Fair Housing OK</span>':'<span class="badge badge-d" style="margin-left:6px">⚠ Fair Housing</span>'}</div>
+          ${r.claims_ok?'<span class="badge badge-a" style="margin-left:6px">Claims OK</span>':'<span class="badge badge-d" style="margin-left:6px">⚠ Check Claims</span>'}</div>
         <p style="font-size:14px;margin-bottom:10px">${(r.summary||'').replace(/</g,'&lt;')}</p>
         ${(r.issues&&r.issues.length)? r.issues.map(it=>`<div style="border-left:3px solid ${sevColor(it.severity)};padding:6px 10px;margin-bottom:8px;background:rgba(255,255,255,0.05)">
             <div style="font-weight:700;font-size:13px;color:${sevColor(it.severity)}">${it.severity?.toUpperCase()} · ${it.area||''}</div>
@@ -1097,51 +966,6 @@ async function useTemplate() {
         ${r.subject?`<div style="font-size:13px;margin-bottom:6px"><strong>Subject:</strong> ${r.subject.replace(/</g,'&lt;')}</div>`:''}
         <div class="ai-output">${r.body.replace(/</g,'&lt;')}</div></div>`;
   } catch(e) { showAlert(e.message, 'error'); }
-}
-
-// ─── Transaction Forms ──────────────────────────────────────────────────────
-async function loadFormsPage() {
-  const sel = document.getElementById('fp-lead');
-  if (!sel) return;
-  try {
-    const data = await api('GET', '/leads/');
-    sel.innerHTML = data.length
-      ? data.map(l=>`<option value="${l.id}">${l.first_name} ${l.last_name}${l.address?` — ${l.address}`:''}</option>`).join('')
-      : '<option value="">No leads yet — add one first</option>';
-  } catch(e) { sel.innerHTML = `<option>${e.message}</option>`; }
-}
-
-async function prepareForms() {
-  const leadId = document.getElementById('fp-lead').value;
-  if (!leadId) { showAlert('Pick a lead first.', 'error'); return; }
-  const res = document.getElementById('fp-result');
-  res.innerHTML = `<div class="loading-overlay"><div class="spinner"></div>Filling forms…</div>`;
-  try {
-    const data = await api('POST', '/forms/prepare', { lead_id: Number(leadId), buyer_name: document.getElementById('fp-buyer').value.trim() });
-    window._preppedForms = data.forms;
-    res.innerHTML = `
-      <div class="alert alert-warning" style="margin-bottom:14px">${data.disclaimer}</div>
-      <div style="margin-bottom:10px;font-weight:700">Prepared for ${data.prepared_for}${data.property?` — ${data.property}`:''}</div>
-      ${data.forms.map((f,i)=>`
-        <div class="card" style="box-shadow:none;border:1px solid var(--border);margin-bottom:12px">
-          <div class="card-header" style="margin-bottom:8px">
-            <span style="font-weight:700">${f.name}</span>
-            <button class="btn btn-ghost btn-sm" onclick="copyForm(${i})">📋 Copy</button>
-          </div>
-          <table style="font-size:14px"><tbody>${f.fields.map(fl=>`<tr>
-            <td style="color:var(--muted);width:42%;padding:5px 8px;border-bottom:1px solid var(--border)">${fl.label}</td>
-            <td style="padding:5px 8px;border-bottom:1px solid var(--border)">${(fl.value===''||fl.value==null)?'<span style=\"color:#c0392b\">— fill in —</span>':String(fl.value).replace(/</g,'&lt;')}</td>
-          </tr>`).join('')}</tbody></table>
-        </div>`).join('')}`;
-  } catch(e) { res.innerHTML = `<div class="alert alert-error">${e.message}</div>`; }
-}
-
-function copyForm(i) {
-  const f = (window._preppedForms||[])[i];
-  if (!f) return;
-  const text = `${f.name}\n` + f.fields.map(fl=>`${fl.label}: ${fl.value||''}`).join('\n');
-  navigator.clipboard.writeText(text).then(()=>showAlert(`Copied "${f.name}" fields.`),
-    ()=>showAlert('Copy failed — select and copy manually.', 'error'));
 }
 
 // ─── Today panel (on the Dashboard) ─────────────────────────────────────────
@@ -1406,200 +1230,6 @@ async function deleteScript(id) {
   catch(e) { showAlert(e.message, 'error'); }
 }
 
-// ─── Document Vault ─────────────────────────────────────────────────────────
-function fmtBytes(n){ if(!n) return '—'; const u=['B','KB','MB','GB']; let i=0; while(n>=1024&&i<3){n/=1024;i++;} return n.toFixed(i?1:0)+' '+u[i]; }
-
-async function loadDocuments() {
-  const el = document.getElementById('documents-list');
-  if (!el) return;
-  try {
-    const filter = document.getElementById('dv-filter')?.value || '';
-    const docs = await api('GET', '/documents/' + (filter ? `?category=${encodeURIComponent(filter)}` : ''));
-    const cnt = document.getElementById('dv-count'); if (cnt) cnt.textContent = `${docs.length} document${docs.length===1?'':'s'}`;
-    if (!docs.length) { el.innerHTML = `<div style="color:var(--muted);font-size:13px">${filter?'No documents of this type.':'No documents stored yet.'}</div>`; return; }
-    el.innerHTML = `<div class="table-wrap"><table>
-      <thead><tr><th>Document</th><th>Type</th><th>Size</th><th>Uploaded</th><th>Keep Until</th><th>Actions</th></tr></thead>
-      <tbody>${docs.map(d=>`<tr>
-        <td><strong>${d.original_name}</strong>${d.notes?`<br><span style="font-size:11px;color:var(--muted)">${d.notes}</span>`:''}</td>
-        <td>${d.category}</td>
-        <td>${fmtBytes(d.size_bytes)}</td>
-        <td style="font-size:12px">${fmtDate(d.uploaded_at)}</td>
-        <td style="font-size:12px">${fmtDate(d.retain_until)} ${d.under_retention?'<span class="badge badge-a" title="Protected by 3-year retention">🔒</span>':''}</td>
-        <td>
-          <a class="btn btn-ghost btn-sm" href="${API}/documents/${d.id}/download">⬇ Download</a>
-          <button class="btn btn-ghost btn-sm" style="color:var(--danger,#c0392b)" onclick="deleteDocument(${d.id}, ${d.under_retention})">Delete</button>
-        </td></tr>`).join('')}</tbody></table></div>`;
-  } catch(e) { el.innerHTML = `<div class="alert alert-error">${e.message}</div>`; }
-}
-
-async function uploadDocument() {
-  const f = document.getElementById('dv-file').files[0];
-  if (!f) { showAlert('Choose a file to upload.', 'error', '#dv-alert'); return; }
-  const fd = new FormData();
-  fd.append('file', f);
-  fd.append('category', document.getElementById('dv-category').value);
-  fd.append('notes', document.getElementById('dv-notes').value.trim());
-  try {
-    const res = await fetch(API + '/documents/upload', { method: 'POST', body: fd });
-    if (!res.ok) throw new Error((await res.json().catch(()=>({}))).detail || 'Upload failed');
-    document.getElementById('dv-file').value=''; document.getElementById('dv-notes').value='';
-    showAlert('✅ Document stored (kept 3 years).', 'success', '#dv-alert');
-    loadDocuments();
-  } catch(e) { showAlert(e.message, 'error', '#dv-alert'); }
-}
-
-async function deleteDocument(id, underRetention) {
-  const msg = underRetention
-    ? 'This document is under the 3-year retention requirement. Delete it anyway? (Not recommended for compliance.)'
-    : 'Delete this document?';
-  if (!confirm(msg)) return;
-  try {
-    await api('DELETE', `/documents/${id}${underRetention?'?force=true':''}`);
-    showAlert('Document deleted.'); loadDocuments();
-  } catch(e) { showAlert(e.message, 'error'); }
-}
-
-async function loadDocIntegrations() {
-  const el = document.getElementById('doc-integrations');
-  if (!el) return;
-  try {
-    const ig = await api('GET', '/documents/integrations');
-    const names = { local_vault:'🗄️ Local Vault', dropbox:'📦 Dropbox', skyslope:'🏢 SkySlope', glide:'📝 Glide' };
-    el.innerHTML = `<div style="display:flex;flex-wrap:wrap;gap:10px">` +
-      Object.entries(ig).map(([k,v])=>`
-        <div class="card" style="box-shadow:none;border:1px solid var(--border);flex:1;min-width:200px">
-          <div style="font-weight:700">${names[k]||k} ${v.connected?'<span class="badge badge-a">Connected</span>':'<span class="badge badge-d">Not connected</span>'}</div>
-          <div style="font-size:12px;color:var(--muted);margin-top:6px">${v.note}</div>
-        </div>`).join('') + `</div>`;
-  } catch(e) { el.innerHTML = `<div class="alert alert-error">${e.message}</div>`; }
-}
-
-async function loadListings() {
-  try {
-    const data = await api('GET', '/listings/');
-    listings = data;
-    if (!data.length) {
-      document.getElementById('listings-table').innerHTML = '<div style="text-align:center;padding:40px;color:var(--muted)">No listings yet. Add one above.</div>';
-      return;
-    }
-    document.getElementById('listings-table').innerHTML = `
-      <div class="table-wrap"><table>
-        <thead><tr><th>Address</th><th>City</th><th>Price</th><th>Status</th><th>DOM</th><th>Actions</th></tr></thead>
-        <tbody>${data.map(l => `<tr>
-          <td><strong>${l.address}</strong></td>
-          <td>${l.city}</td>
-          <td>${fmt$(l.list_price)}</td>
-          <td>${stageBadge(l.status)}</td>
-          <td>${l.list_date ? Math.floor((Date.now()-new Date(l.list_date))/86400000)+' days' : '—'}</td>
-          <td>
-            <button class="btn btn-ghost btn-sm" onclick="openChecklist(${l.id})">📋 Checklist</button>
-            <button class="btn btn-ghost btn-sm" onclick="getMLS(${l.id})">MLS Copy</button>
-            <button class="btn btn-ghost btn-sm" onclick="getSocial(${l.id})">Social Posts</button>
-            <button class="btn btn-primary btn-sm" onclick="getPresentation(${l.id})">Presentation</button>
-          </td>
-        </tr>`).join('')}</tbody>
-      </table></div>`;
-  } catch(e) { document.getElementById('listings-table').innerHTML = `<div class="alert alert-error">${e.message}</div>`; }
-}
-
-function showAddListing() {
-  showModal(`
-    <div class="modal-header"><span class="modal-title">Add Listing</span><button class="modal-close" onclick="closeModal()">×</button></div>
-    <div id="listing-alert"></div>
-    <div class="form-group"><label>Address *</label><input id="ls-addr" placeholder="123 Oak Street"></div>
-    <div class="grid-2">
-      <div class="form-group"><label>City *</label><input id="ls-city" placeholder="Los Gatos"></div>
-      <div class="form-group"><label>ZIP</label><input id="ls-zip" placeholder="95030"></div>
-    </div>
-    <div class="grid-2">
-      <div class="form-group"><label>List Price *</label><input id="ls-price" type="number" placeholder="1495000"></div>
-      <div class="form-group"><label>Year Built</label><input id="ls-year" type="number" placeholder="1985"></div>
-    </div>
-    <div class="grid-3">
-      <div class="form-group"><label>Beds</label><input id="ls-beds" type="number" placeholder="3" value="3"></div>
-      <div class="form-group"><label>Baths</label><input id="ls-baths" type="number" step="0.5" placeholder="2" value="2"></div>
-      <div class="form-group"><label>Sqft</label><input id="ls-sqft" type="number" placeholder="1600"></div>
-    </div>
-    <div class="form-group"><label>HOA Fee/mo</label><input id="ls-hoa" type="number" placeholder="0" value="0"></div>
-    <button class="btn btn-primary" style="width:100%;margin-top:8px" onclick="submitAddListing()">Create Listing</button>
-  `);
-}
-
-async function submitAddListing() {
-  const data = {
-    address: document.getElementById('ls-addr').value,
-    city: document.getElementById('ls-city').value,
-    zip_code: document.getElementById('ls-zip').value || '00000',
-    list_price: parseFloat(document.getElementById('ls-price').value),
-    bedrooms: parseInt(document.getElementById('ls-beds').value)||3,
-    bathrooms: parseFloat(document.getElementById('ls-baths').value)||2,
-    sqft: parseInt(document.getElementById('ls-sqft').value)||1500,
-    year_built: parseInt(document.getElementById('ls-year').value)||null,
-    hoa_fee: parseFloat(document.getElementById('ls-hoa').value)||0,
-  };
-  if (!data.address || !data.list_price) { showAlert('Address and price required','error','#listing-alert'); return; }
-  try {
-    await api('POST', '/listings/', data);
-    closeModal();
-    showAlert('Listing created!');
-    loadListings();
-  } catch(e) { showAlert(e.message,'error','#listing-alert'); }
-}
-
-async function openChecklist(listingId) {
-  try {
-    const d = await api('GET', `/listings/${listingId}/checklist`);
-    showModal(`<div class="modal-header"><span class="modal-title">📋 Transaction Checklist</span><button class="modal-close" onclick="closeModal()">×</button></div>
-      <div style="margin-bottom:8px;font-size:13px;color:var(--muted)">${d.done} of ${d.total} steps done (${d.percent}%)</div>
-      <div style="height:8px;background:#eee;border-radius:5px;overflow:hidden;margin-bottom:14px"><div style="height:100%;width:${d.percent}%;background:var(--success,#2e9e5b)"></div></div>
-      <div style="display:flex;flex-direction:column;gap:4px">
-        ${d.items.map(it=>`<label style="display:flex;align-items:center;gap:10px;padding:6px 0;border-bottom:1px solid var(--border)">
-          <input type="checkbox" ${it.done?'checked':''} onchange="toggleChecklist(${it.id},this.checked,${listingId})" style="width:auto">
-          <span style="flex:1;${it.done?'text-decoration:line-through;color:var(--muted)':''}">${it.label.replace(/</g,'&lt;')}</span>
-          <button class="btn btn-ghost btn-sm" style="color:var(--danger,#c0392b)" onclick="deleteChecklistItem(${it.id},${listingId})">✕</button>
-        </label>`).join('')}
-      </div>
-      <div style="display:flex;gap:8px;margin-top:12px">
-        <input id="ck-new" placeholder="Add a custom step…" style="flex:1">
-        <button class="btn btn-accent btn-sm" onclick="addChecklistItem(${listingId})">Add</button>
-      </div>`);
-  } catch(e) { showAlert(e.message, 'error'); }
-}
-async function toggleChecklist(itemId, done, listingId) { try { await api('PUT', `/listings/checklist/${itemId}`, { done }); openChecklist(listingId); } catch(e) { showAlert(e.message, 'error'); } }
-async function addChecklistItem(listingId) { const v = document.getElementById('ck-new').value.trim(); if (!v) return; try { await api('POST', `/listings/${listingId}/checklist`, { label: v }); openChecklist(listingId); } catch(e) { showAlert(e.message, 'error'); } }
-async function deleteChecklistItem(itemId, listingId) { try { await api('DELETE', `/listings/checklist/${itemId}`); openChecklist(listingId); } catch(e) { showAlert(e.message, 'error'); } }
-
-async function getMLS(id) {
-  const modal = document.createElement('div');
-  modal.className = 'modal-overlay';
-  modal.innerHTML = `<div class="modal"><div class="modal-header"><span class="modal-title">MLS Description</span><button class="modal-close" onclick="this.closest('.modal-overlay').remove()">×</button></div><div class="loading-overlay"><div class="spinner"></div>Writing listing copy…</div></div>`;
-  document.body.appendChild(modal);
-  const res = await api('POST', `/listings/${id}/mls-description`);
-  modal.querySelector('.modal div:last-child').innerHTML = `
-    <div class="ai-output">${res.mls_description}</div>
-    <button class="btn btn-ghost btn-sm" style="margin-top:10px" onclick="navigator.clipboard.writeText(document.querySelector('.ai-output').textContent);this.textContent='Copied!'">Copy to Clipboard</button>`;
-}
-
-async function getSocial(id) {
-  const modal = document.createElement('div');
-  modal.className = 'modal-overlay';
-  modal.innerHTML = `<div class="modal"><div class="modal-header"><span class="modal-title">Social Media Posts</span><button class="modal-close" onclick="this.closest('.modal-overlay').remove()">×</button></div><div class="loading-overlay"><div class="spinner"></div>Creating social content…</div></div>`;
-  document.body.appendChild(modal);
-  const res = await api('POST', `/listings/${id}/social-posts`);
-  const posts = res.posts || {};
-  modal.querySelector('.modal div:last-child').innerHTML = Object.entries(posts).map(([k,v]) =>
-    `<div style="margin-bottom:16px"><strong style="text-transform:capitalize">${k.replace(/_/g,' ')}:</strong><div class="ai-output" style="margin-top:6px">${v}</div></div>`
-  ).join('');
-}
-
-async function getPresentation(id) {
-  const modal = document.createElement('div');
-  modal.className = 'modal-overlay';
-  modal.innerHTML = `<div class="modal" style="max-width:800px"><div class="modal-header"><span class="modal-title">Listing Presentation</span><button class="modal-close" onclick="this.closest('.modal-overlay').remove()">×</button></div><div class="loading-overlay"><div class="spinner"></div>Building full listing presentation…</div></div>`;
-  document.body.appendChild(modal);
-  const res = await api('POST', `/listings/${id}/presentation`);
-  modal.querySelector('.modal div:last-child').innerHTML = `<div class="ai-output">${res.presentation}</div>`;
-}
 
 async function loadPendingEmails() {
   const data = await api('GET', '/marketing/email/pending');

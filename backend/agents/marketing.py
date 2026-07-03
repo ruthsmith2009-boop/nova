@@ -1,56 +1,55 @@
 """
-Marketing Engine — MLS descriptions, social posts, newsletters, email sequences.
+Marketing Engine — offer descriptions, social posts, newsletters, email sequences.
+Industry-agnostic: works for any small business generating and nurturing leads.
 """
 import json
-from agents.brain import think, SANTA_CLARA_KNOWLEDGE
+from agents.brain import think, BUSINESS_KNOWLEDGE
 from config import settings
 
 
 async def write_mls_description(listing_data: dict) -> str:
-    """Write an MLS listing description that creates urgency and emotional connection."""
+    """Write a compelling description of a product/service/offer."""
     return await think(
-        f"""Write a compelling MLS listing description for this property.
+        f"""Write a compelling description of this offer/product/service for marketing.
 
-Property: {json.dumps(listing_data, indent=2)}
+Offer: {json.dumps(listing_data, indent=2)}
 
-{SANTA_CLARA_KNOWLEDGE}
+{BUSINESS_KNOWLEDGE}
 
-Rules for top-producing MLS copy:
-- Open with the most compelling feature or lifestyle statement (NOT "Beautiful home!")
+Rules for high-converting copy:
+- Open with the single most compelling benefit (NOT "Great service!")
 - Use vivid, specific language — not generic adjectives
-- Lead with what makes this home DIFFERENT from competing listings
-- Address the buyer's emotional drivers: safety, community, schools, lifestyle
-- Include neighborhood/location value if it's a premium
-- Hint at multiple offers without being desperate
-- Close with a call to action
-- Max 300 words for MLS
-- NO ALL CAPS, no exclamation mark overload
-- Write for the qualified buyer, not everyone
+- Lead with what makes this DIFFERENT from competitors
+- Speak to the customer's real motivation (save time, save money, reduce stress)
+- Close with a clear call to action
+- Max 300 words
+- NO ALL CAPS, no exclamation-mark overload
+- Write for the ideal buyer, not everyone
 
-Return ONLY the listing description text, ready to paste into MLS."""
+Return ONLY the description text, ready to use."""
     )
 
 
 async def write_social_posts(listing_data: dict, mls_description: str = "") -> dict:
-    """Generate social media posts for a new listing."""
+    """Generate social media posts for a new offer/announcement."""
     result = await think(
-        f"""Create social media posts for this new listing by {settings.agent_name}.
+        f"""Create social media posts for this offer by {settings.agent_name}.
 
-Property: {json.dumps(listing_data, indent=2)}
-MLS Description preview: {mls_description[:200] if mls_description else 'N/A'}
+Offer: {json.dumps(listing_data, indent=2)}
+Description preview: {mls_description[:200] if mls_description else 'N/A'}
 
-{SANTA_CLARA_KNOWLEDGE}
+{BUSINESS_KNOWLEDGE}
 
-Generate posts for each platform. Return as JSON:
+Generate posts for each platform. Choose hashtags that fit the business/industry. Return as JSON:
 {{
   "instagram_caption": "Compelling caption with line breaks and emoji. 150-200 words. End with hashtags.",
-  "instagram_hashtags": "#SantaClaraCounty #[City]RealEstate #JustListed #[Neighborhood]Homes ...",
+  "instagram_hashtags": "8-12 relevant hashtags for this business",
   "facebook_post": "Longer, more detailed post. Include key facts. 200-300 words. Conversational.",
-  "linkedin_post": "Professional angle. Market context + listing details. 150 words. Good for SOI.",
-  "twitter_x_post": "Short punchy. Key stats. CTA. Under 240 chars.",
+  "linkedin_post": "Professional angle. Value + details. 150 words. Good for referral network.",
+  "twitter_x_post": "Short punchy. Key point. CTA. Under 240 chars.",
   "stories_text": "Short text for IG/FB stories overlay. 2-3 lines max.",
-  "listing_hook": "One compelling sentence for any platform",
-  "email_subject": "Subject line for just-listed email blast"
+  "offer_hook": "One compelling sentence for any platform",
+  "email_subject": "Subject line for an announcement email blast"
 }}""",
         use_haiku=True
     )
@@ -61,58 +60,58 @@ Generate posts for each platform. Return as JSON:
         return {"error": "Could not generate social posts", "raw": result[:300]}
 
 
-async def write_weekly_newsletter(area: str, market_data: dict) -> str:
-    """Generate a weekly neighborhood market update newsletter."""
+async def write_weekly_newsletter(topic: str, context: dict = None) -> str:
+    """Generate a weekly value newsletter for the business's audience (any industry)."""
+    context = context or {}
     return await think(
-        f"""Write a weekly real estate market newsletter for {area}, Santa Clara County.
+        f"""Write a weekly email newsletter about "{topic}" for a small business's audience of
+customers and prospects. Adapt to whatever industry the topic implies — never assume real estate.
 
-Market data this week: {json.dumps(market_data, indent=2)}
+Any context/notes to include: {json.dumps(context, indent=2)}
 
-{SANTA_CLARA_KNOWLEDGE}
+{BUSINESS_KNOWLEDGE}
 
-Write a professional, engaging 500-word newsletter as {settings.agent_name}.
+Write a professional, engaging ~500-word newsletter as {settings.agent_name} of {settings.broker_name}.
 Include:
-1. Quick market snapshot (3-4 key stats in bold)
-2. What's happening in the neighborhood (new listings, price changes, sold)
-3. Insight: what does this mean for sellers? For buyers?
-4. Featured listing (if listing_data provided)
-5. Tip of the week (a quick, valuable real estate insight)
-6. Call to action: book a free home valuation
+1. A short, friendly intro that hooks the reader
+2. The main value section — a helpful insight, update, or how-to on the topic
+3. A quick tip of the week the reader can act on today
+4. A light, genuine story or example
+5. A clear call to action (book a quick call, reply, claim an offer)
 
-Tone: Knowledgeable neighbor, not salesy. Like the most informed person in the neighborhood
-is giving you the real inside scoop.
+Tone: knowledgeable, warm, helpful — like the most useful person in their inbox, not salesy.
 
 Format with HTML-ready headers (use <h2>, <p>, <strong> tags) for email rendering."""
     )
 
 
 async def write_email_sequence(lead: dict, sequence_type: str) -> list[dict]:
-    """Generate a complete email follow-up sequence for a lead stage."""
+    """Generate a complete email follow-up sequence for a lead stage (universal sales nurture)."""
     sequences = {
         "new_lead": {
             "emails": 5,
             "days": [0, 3, 7, 14, 30],
-            "description": "New lead nurture — establish expertise, provide value, soft ask"
+            "description": "New lead nurture — build trust, provide value, soft ask"
         },
-        "post_appointment": {
+        "post_meeting": {
             "emails": 4,
             "days": [0, 2, 7, 14],
-            "description": "After listing presentation — follow up, handle hesitation, close"
+            "description": "After a call/meeting — follow up, handle hesitation, ask for the sale"
         },
-        "active_listing": {
+        "active_deal": {
             "emails": 6,
             "days": [0, 3, 7, 14, 21, 30],
-            "description": "Seller update sequence — activity report, market pulse, engagement"
+            "description": "Open opportunity — keep momentum, reassure, keep them engaged"
         },
-        "under_contract": {
+        "proposal_sent": {
             "emails": 5,
-            "days": [0, 5, 10, 20, -3],
-            "description": "Transaction updates — milestones, deadlines, reassurance"
+            "days": [0, 3, 7, 14, 21],
+            "description": "Proposal follow-up — answer objections, add urgency, close"
         },
-        "closed": {
+        "won": {
             "emails": 4,
             "days": [1, 30, 180, 365],
-            "description": "Post-close nurture — referral ask, anniversary, market updates"
+            "description": "Post-sale nurture — onboarding, referral ask, check-ins"
         }
     }
 
@@ -123,27 +122,27 @@ async def write_email_sequence(lead: dict, sequence_type: str) -> list[dict]:
         f"""Create a {seq['emails']}-email follow-up sequence for this lead.
 
 Lead: {lead_name}
-Address: {lead.get('address', '')} {lead.get('city', '')}
-Situation: {lead.get('life_event', 'homeowner')}
+Company / location: {lead.get('address', '')} {lead.get('city', '')}
+What they need / situation: {lead.get('life_event', 'a prospect')}
 Sequence: {sequence_type} — {seq['description']}
-Send days: {seq['days']} (day 0 = today, day -3 = 3 days before close)
+Send days: {seq['days']} (day 0 = today)
 
-{SANTA_CLARA_KNOWLEDGE}
+{BUSINESS_KNOWLEDGE}
 
 Write each email. Return JSON array:
 [
   {{
     "email_number": 1,
     "send_day": 0,
-    "subject": "Your home value in today's {lead.get('city', 'Santa Clara County')} market",
+    "subject": "A quick idea for you",
     "body": "Hi [First Name],\\n\\n[Full email body — 150-250 words, personal, valuable, no hard sell on first email]\\n\\nBest,\\n{settings.agent_name}",
-    "purpose": "Establish value, no ask",
-    "cta": "soft — read the market report"
+    "purpose": "Build trust, no ask",
+    "cta": "soft — reply or grab a quick call"
   }}
 ]
 
-Make each email genuinely valuable, not a generic template. Personalize for their situation.
-Use their address/neighborhood for specificity.""",
+Make each email genuinely valuable, not a generic template. Personalize for their situation and
+industry. Never assume real estate."""
     )
 
     try:
@@ -153,31 +152,30 @@ Use their address/neighborhood for specificity.""",
 
 
 async def write_listing_presentation(listing_data: dict, cma_data: dict, seller_data: dict) -> str:
-    """Generate content for a full listing presentation."""
+    """Generate a full sales proposal / pitch to win a client."""
     return await think(
-        f"""Create a comprehensive listing presentation for this property.
+        f"""Create a comprehensive sales proposal to win this client.
 
-Property: {json.dumps(listing_data, indent=2)}
-CMA: {json.dumps(cma_data, indent=2)}
-Seller: {json.dumps(seller_data, indent=2)}
+Offer / scope: {json.dumps(listing_data, indent=2)}
+Pricing / numbers: {json.dumps(cma_data, indent=2)}
+Client: {json.dumps(seller_data, indent=2)}
 
-{SANTA_CLARA_KNOWLEDGE}
+{BUSINESS_KNOWLEDGE}
 
-Write the complete listing presentation as {settings.agent_name}, {settings.broker_name}.
+Write the complete proposal as {settings.agent_name}, {settings.broker_name}.
 
 Include all sections:
-1. **About Ruth Smith** — track record, sales volume, Santa Clara County expertise
-2. **Your Neighborhood Market** — current conditions, opportunity window
-3. **Your Home's Value** — CMA results, pricing strategy recommendation
-4. **Marketing Plan** — exactly how we'll sell your home (MLS, social, open houses, buyer network)
-5. **Pricing Strategy** — the risk of overpricing, the power of competitive pricing
-6. **Timeline** — week by week from list to close
-7. **Transaction Coordination** — every step handled for you
-8. **What Makes Us Different** — specific differentiators, not generic claims
-9. **Net Sheet Preview** — what you'll walk away with at different price points
-10. **Next Steps** — the ask
+1. **About Us** — track record, results, why you're credible
+2. **Your Situation** — the client's problem and the opportunity
+3. **Our Recommendation** — the plan and why it works
+4. **What We'll Do** — exactly how the work gets done, step by step
+5. **Pricing / Investment** — options and what each includes
+6. **Timeline** — week by week from start to result
+7. **What Makes Us Different** — specific differentiators, not generic claims
+8. **Results You Can Expect** — realistic outcomes (no unsubstantiated guarantees)
+9. **Next Steps** — the ask
 
 Format with clear headers. Write with confidence and specificity.
-This should be good enough to win a listing against a competing agent.
+This should be strong enough to win the client against a competitor.
 Use HTML formatting (<h2>, <h3>, <p>, <ul><li>, <strong>) for web rendering."""
     )

@@ -1,33 +1,38 @@
 """
-Attorney / Compliance sub-agent — a safety check on ARIA's outputs before they go out.
+Compliance sub-agent — a safety check on NOVA's outputs before they go out.
 
-Flags likely legal/compliance problems in real-estate content under California + US federal law
-(Fair Housing, required disclosures, advertising rules, CAN-SPAM, TCPA, DRE license display).
+Flags likely legal/compliance problems in sales & marketing content under US federal law and
+general advertising rules (truth-in-advertising / FTC, CAN-SPAM for email, TCPA for texts/calls,
+unsubstantiated claims, testimonial/endorsement rules). Industry-agnostic.
 NOT legal advice — it's a guardrail that recommends licensed review for anything serious.
 """
 import json
 from agents.brain import think_structured
 
-COMPLIANCE_PERSONA = """You are ARIA's compliance reviewer for real-estate content. Review the text
-for likely legal/compliance issues under CALIFORNIA and US FEDERAL law, especially:
-- FAIR HOUSING: no language that discriminates, steers, or expresses preference/limitation based on
-  protected classes (race, color, religion, sex, familial status, national origin, disability, plus
-  CA classes: marital status, sexual orientation, gender identity, source of income, age, ancestry,
-  genetic info). Flag phrases like "perfect for families", "safe neighborhood", "exclusive", etc.
-- REQUIRED DISCLOSURES: agency relationship, material facts, known defects (for CA listings/TDS).
-- ADVERTISING: DRE license # + broker identification on marketing; no misleading/unsubstantiated
-  claims ("guaranteed", "#1", specific ROI) without basis.
-- CAN-SPAM (email): identify sender, valid physical address, clear opt-out.
-- TCPA (texts/calls): prior express consent; honor do-not-call.
+COMPLIANCE_PERSONA = """You are NOVA's compliance reviewer for sales & marketing content (any
+industry — service businesses, agencies, local trades, SaaS, coaching, etc.). Review the text for
+likely legal/advertising issues under US FEDERAL law and general marketing rules, especially:
+- TRUTH IN ADVERTISING (FTC): no misleading, deceptive, or unsubstantiated claims. Flag absolute
+  or unprovable claims like "guaranteed", "#1", "the best", specific ROI/results ("double your
+  revenue"), "risk-free" — unless they can be backed up, and note that disclaimers may be needed.
+- TESTIMONIALS / ENDORSEMENTS: results shown must be typical or clearly disclosed as not typical;
+  disclose material connections (paid, affiliate, incentive).
+- CAN-SPAM (email): identify the sender, include a valid physical mailing address, and a clear,
+  working opt-out / unsubscribe.
+- TCPA (texts/calls): require prior express consent before texting/calling; honor do-not-call and
+  opt-out ("reply STOP"); no auto-dialing without consent.
+- PRICING / GUARANTEES: money-back or guarantee language should state the actual terms.
+- SENSITIVE / DISCRIMINATORY LANGUAGE: avoid content that targets or excludes people based on
+  protected characteristics.
 
-You are NOT a lawyer and this is NOT legal advice — it is a safety check. Always recommend a licensed
-attorney/broker review anything flagged high severity or legally consequential."""
+You are NOT a lawyer and this is NOT legal advice — it is a safety check. Always recommend a
+licensed attorney review anything flagged high severity or legally consequential."""
 
 
 async def check_compliance(text: str, kind: str = "general") -> dict:
     data = await think_structured(
-        f"""Review this {kind} real-estate content for compliance issues. Be practical — flag real
-problems, not nitpicks. For each issue give a concrete fix.
+        f"""Review this {kind} sales/marketing content for compliance issues. Be practical — flag
+real problems, not nitpicks. For each issue give a concrete fix.
 
 CONTENT:
 {text}
@@ -35,9 +40,9 @@ CONTENT:
 Return JSON:
 {{
   "overall": "pass | review_recommended | needs_changes",
-  "fair_housing_ok": true,
+  "claims_ok": true,
   "issues": [
-    {{"severity": "high|medium|low", "area": "Fair Housing|Disclosure|Advertising|CAN-SPAM|TCPA|Other",
+    {{"severity": "high|medium|low", "area": "Advertising Claims|Testimonials|CAN-SPAM|TCPA|Pricing/Guarantee|Other",
       "issue": "what's wrong", "fix": "how to fix it", "quote": "the exact problematic phrase, if any"}}
   ],
   "cleaned_version": "an optional compliant rewrite of the content, or empty string",
@@ -49,9 +54,9 @@ Return JSON:
     try:
         parsed = json.loads(data)
     except Exception:
-        return {"overall": "review_recommended", "fair_housing_ok": True, "issues": [],
+        return {"overall": "review_recommended", "claims_ok": True, "issues": [],
                 "cleaned_version": "", "summary": "Could not auto-parse the review — please review manually.",
                 "raw": data[:500]}
-    parsed["disclaimer"] = ("Automated safety check — not legal advice. Have a licensed attorney or "
-                            "your broker review anything flagged or legally consequential.")
+    parsed["disclaimer"] = ("Automated safety check — not legal advice. Have a licensed attorney "
+                            "review anything flagged or legally consequential.")
     return parsed

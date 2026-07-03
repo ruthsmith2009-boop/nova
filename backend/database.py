@@ -302,8 +302,8 @@ class Expense(Base):
     amount = Column(Float)
     vendor = Column(String(200))
     description = Column(String(500), default="")
-    category = Column(String(100))          # e.g. "AI APIs", "MLS Dues", "Marketing"
-    segment = Column(String(30), default="real_estate")  # real_estate | ai_tech | shared
+    category = Column(String(100))          # e.g. "AI APIs", "Marketing", "Software & SaaS"
+    segment = Column(String(30), default="business")  # business | ai_tech | shared
     recurrence = Column(String(20), default="one_time")  # one_time | monthly | yearly
     is_tax_deductible = Column(Boolean, default=True)
     payment_method = Column(String(100), nullable=True)
@@ -316,7 +316,7 @@ class ScheduledHunt(Base):
     __tablename__ = "scheduled_hunts"
 
     id = Column(Integer, primary_key=True, index=True)
-    hunt_type = Column(String(40))            # seller_leads | fsbo | expired_fsbo | distressed | ai_service_clients
+    hunt_type = Column(String(40))            # ideal_clients | local_businesses | referral_partners
     city = Column(String(120), default="")
     state = Column(String(20), default="")
     neighborhood = Column(String(120), default="")
@@ -356,7 +356,7 @@ class Script(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     title = Column(String(200))
-    category = Column(String(80), default="Custom")   # Custom, Expired, FSBO, Objection, Buyer, etc.
+    category = Column(String(80), default="Custom")   # Custom, Cold Outreach, Follow-Up, Objection, Closing, etc.
     author = Column(String(120), default="")          # e.g. Tom Ferry (optional)
     content = Column(Text, default="")
     created_at = Column(DateTime, default=datetime.utcnow)

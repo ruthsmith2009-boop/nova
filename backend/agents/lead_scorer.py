@@ -1,12 +1,12 @@
 """
-Lead Scoring Engine — ranks every lead by sell probability.
-Factors: equity, DOM, expired listings, absentee, life events, price history.
+Lead Scoring Engine — ranks every lead by likelihood to buy / close.
+Factors: stated need, source warmth, reachability, decision-maker signals.
 """
 import json
 import pandas as pd
 from io import BytesIO
 from typing import Optional
-from agents.brain import think_structured, SANTA_CLARA_KNOWLEDGE
+from agents.brain import think_structured, BUSINESS_KNOWLEDGE
 
 
 # ── Follow-up cadences (days between touches) ────────────────────────────────
@@ -128,32 +128,32 @@ def calculate_base_score(lead_data: dict) -> tuple[float, list[str]]:
 async def ai_enhance_score(lead_data: dict, base_score: float, base_reasons: list) -> dict:
     """Use AI to add nuance and suggest the best approach for each lead."""
     result = await think_structured(
-        f"""You are scoring a small-business owner as a prospective client for an AI-automation
-consultant (NOVA) that sets up AI phone answering, missed-call text-back, automated lead
-follow-up, and online booking for local businesses.
+        f"""You are scoring a lead as a prospective customer for a sales/service business. Stay
+industry-agnostic — the user could sell any product or service. Judge fit from the lead's stated
+need, how reachable they are, whether they look like the decision-maker, and source warmth.
 
 Lead data: {json.dumps(lead_data, indent=2)}
 Base score calculated: {base_score}/100
 Base reasons: {json.dumps(base_reasons)}
 
-Score how good a fit this business owner is to BUY AI-automation services, and how likely
-they are to book a call. Higher = warmer, clearer pain, easier to reach and close.
+Score how good a fit this lead is to BUY, and how likely they are to book a call. Higher = warmer,
+clearer need, easier to reach and close.
 
 Return JSON:
 {{
   "final_score": 72.5,
   "score_grade": "A",
   "sell_probability": "High",
-  "best_approach": "Lead with the missed-call pain — every missed call is a lost job. Offer a 10-min demo.",
+  "best_approach": "Lead with their stated need and offer a quick, no-pressure call.",
   "best_time_to_call": "Weekdays 9-11am before the day gets busy",
-  "email_subject_line": "quick question about missed calls at [Company]",
+  "email_subject_line": "quick question for [Company]",
   "key_talking_points": [
-    "Local service owners lose 20-30% of leads to missed calls and voicemail tag",
-    "AI answers instantly, texts back, and books the job while they work",
-    "Set up in days, runs for about the cost of one lost job a month"
+    "Tie the pitch to the need or pain this lead has shown",
+    "Keep the ask small — a short intro call, not a hard sell",
+    "Have one credible proof point or result ready"
   ],
-  "objections_to_expect": ["I'm too busy to set this up", "I already have a receptionist", "Is it expensive?"],
-  "urgency_factors": ["Every missed call this week is a job lost to a competitor"],
+  "objections_to_expect": ["I'm too busy right now", "We already have someone", "Is it expensive?"],
+  "urgency_factors": ["Name a real reason it helps to act sooner rather than later"],
   "final_reasons": ["reason 1", "reason 2"]
 }}""",
         use_haiku=True
@@ -227,16 +227,13 @@ async def process_csv_upload(file_content: bytes, filename: str) -> list[dict]:
         field_map = {
             "first_name": ["first_name", "firstname", "first", "fname"],
             "last_name": ["last_name", "lastname", "last", "lname"],
-            "email": ["email", "email_address", "e_mail"],
-            "phone": ["phone", "phone_number", "cell", "mobile", "telephone"],
-            "address": ["address", "property_address", "street", "street_address"],
-            "city": ["city", "town"],
+            "email": ["email", "email_address", "e_mail", "work_email"],
+            "phone": ["phone", "phone_number", "cell", "mobile", "telephone", "work_phone"],
+            "address": ["company", "business_name", "organization", "account", "address", "street"],
+            "city": ["city", "town", "location"],
             "zip_code": ["zip", "zip_code", "zipcode", "postal_code"],
-            "years_owned": ["years_owned", "ownership_years", "years"],
-            "is_absentee": ["absentee", "is_absentee", "non_owner_occupied"],
-            "has_expired_listing": ["expired", "has_expired", "expired_listing"],
-            "days_on_market": ["days_on_market", "dom", "days"],
-            "life_event": ["life_event", "situation", "motivation"],
+            "life_event": ["life_event", "situation", "need", "interest", "title", "job_title",
+                           "industry", "notes"],
             "source": ["source", "lead_source", "list_source"]
         }
 
@@ -250,7 +247,7 @@ async def process_csv_upload(file_content: bytes, filename: str) -> list[dict]:
                         if pd.notna(val):
                             lead[field] = val
                         break
-            if lead.get("first_name") or lead.get("address"):
+            if lead.get("first_name") or lead.get("address") or lead.get("email"):
                 leads.append(lead)
 
         return leads

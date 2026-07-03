@@ -14,7 +14,7 @@ router = APIRouter(prefix="/social", tags=["social"])
 
 
 class GeneratePostRequest(BaseModel):
-    content_type: str = "listing"   # listing, market_update, just_sold, open_house, tip, custom
+    content_type: str = "new_offer"   # new_offer, industry_update, customer_win, promo, tip, testimonial, spotlight, custom
     subject: str
     details: Optional[dict] = None
     image_url: Optional[str] = None
@@ -22,7 +22,7 @@ class GeneratePostRequest(BaseModel):
 
 
 class VideoScriptRequest(BaseModel):
-    video_type: str = "market_update"
+    video_type: str = "industry_update"
     topic: str
     duration_minutes: int = 3
     platform: str = "youtube"
@@ -124,7 +124,7 @@ def credentials_status():
         "linkedin": bool(settings.linkedin_access_token and settings.linkedin_person_urn),
         "youtube": "manual_upload",
         "tiktok": "manual_upload",
-        "nextdoor": "manual_upload"
+        "google_business": "manual_upload"
     }
 
 

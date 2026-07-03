@@ -15,7 +15,7 @@ router = APIRouter(prefix="/leadgen", tags=["lead-generator"])
 
 
 class HuntRequest(BaseModel):
-    hunt_type: str  # seller_leads | expired_fsbo | fsbo | ai_service_clients
+    hunt_type: str  # ideal_clients | local_businesses | referral_partners
     city: Optional[str] = ""
     state: Optional[str] = ""
     neighborhood: Optional[str] = ""
@@ -149,7 +149,7 @@ async def _ingest_webhook_body(request: Request, db: Session) -> dict:
     results = []
     for item in items:
         if isinstance(item, dict):
-            results.append(await ingest_inbound_lead(db, item, default_source="batchleads_zapier"))
+            results.append(await ingest_inbound_lead(db, item, default_source="web_zapier"))
 
     created = sum(1 for r in results if r.get("status") == "created")
     dupes = sum(1 for r in results if r.get("status") == "duplicate")
@@ -162,7 +162,7 @@ async def _ingest_webhook_body(request: Request, db: Session) -> dict:
 async def inbound_webhook(request: Request, token: Optional[str] = None,
                           db: Session = Depends(get_db)):
     """
-    Generic inbound lead webhook for Zapier / BatchData / any external source.
+    Generic inbound lead webhook for Zapier / website forms / any external source.
     Accepts a single lead object OR a list of lead objects in the JSON body.
     Optional ?token= must match LEADGEN_WEBHOOK_TOKEN in .env (if that key is set).
     """
@@ -172,11 +172,11 @@ async def inbound_webhook(request: Request, token: Optional[str] = None,
 
 @router.get("/inbound/info")
 def inbound_info():
-    """Show the webhook URL + setup hints for connecting BatchLeads / Zapier."""
+    """Show the webhook URL + setup hints for connecting a website form / Zapier / any source."""
     base = settings.public_base_url or "http://localhost:8000"
     has_token = bool(getattr(settings, "leadgen_webhook_token", None))
     query_url = f"{base}/leadgen/inbound" + ("?token=YOUR_TOKEN" if has_token else "")
-    # Path-style URL has no "?" — use this one for CRMs (BatchLeads) that reject query strings.
+    # Path-style URL has no "?" — use this one for tools that reject query strings.
     path_url = f"{base}/leadgen/inbound" + ("/YOUR_TOKEN" if has_token else "")
     return {
         "webhook_url": query_url,
@@ -186,14 +186,14 @@ def inbound_info():
         "token_required": has_token,
         "example_payload": {
             "first_name": "Jane", "last_name": "Doe", "phone": "+14085551234",
-            "email": "jane@example.com", "address": "123 Oak St", "city": "Los Gatos",
-            "is_absentee": True, "life_event": "downsizing", "source": "batchdata",
+            "email": "jane@example.com", "company": "Acme Plumbing", "city": "San Jose",
+            "life_event": "wants more booked jobs", "source": "website_form",
         },
-        "batchleads_steps": [
-            "1. BatchLeads → Settings → Integrations → add a Webhook integration.",
+        "setup_steps": [
+            "1. In Zapier (or your website form tool) add a Webhook action.",
             f"2. URL (no '?'): {path_url}",
-            "3. Check 'Push to CRM', leave 'Incoming SMS' off, assign your campaign, Save.",
-            "4. Inbox → pick a lead → 'Push to CRM' → ARIA. Lead appears in ARIA, auto-scored.",
+            "3. Method POST, JSON body with the lead's name, phone/email, and company.",
+            "4. Test it — the lead appears in NOVA, auto-scored.",
         ],
     }
 
@@ -203,11 +203,11 @@ async def inbound_webhook_path(token: str, request: Request,
                                db: Session = Depends(get_db)):
     """
     Same inbound webhook, but with the token in the URL PATH instead of a
-    query string — e.g. /leadgen/inbound/<token>. Some CRMs (BatchLeads) reject
+    query string — e.g. /leadgen/inbound/<token>. Some tools reject
     webhook URLs that contain a "?". GET/HEAD return a 200 "ready" so those
     services' URL-validation pings succeed; POST ingests the lead(s).
     """
     _check_webhook_token(token)
     if request.method in ("GET", "HEAD"):
-        return {"status": "ready", "message": "ARIA inbound webhook is live. POST leads here."}
+        return {"status": "ready", "message": "NOVA inbound webhook is live. POST leads here."}
     return await _ingest_webhook_body(request, db)

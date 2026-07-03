@@ -6,7 +6,7 @@ from datetime import datetime
 
 from database import get_db, Expense
 from agents.finance import (
-    summarize, ai_categorize, monthly_report, CATEGORIES, ARIA_STACK,
+    summarize, ai_categorize, monthly_report, CATEGORIES, NOVA_STACK,
 )
 
 router = APIRouter(prefix="/finance", tags=["finance"])
@@ -17,7 +17,7 @@ class ExpenseCreate(BaseModel):
     vendor: str
     description: Optional[str] = ""
     category: Optional[str] = None
-    segment: Optional[str] = "real_estate"
+    segment: Optional[str] = "business"
     recurrence: Optional[str] = "one_time"
     is_tax_deductible: Optional[bool] = True
     payment_method: Optional[str] = None
@@ -93,20 +93,20 @@ async def get_report(db: Session = Depends(get_db)):
 
 @router.post("/seed-aria-stack")
 def seed_aria_stack(db: Session = Depends(get_db)):
-    """Quick-add the ARIA tool stack as recurring expenses (editable estimates)."""
+    """Quick-add the NOVA tool stack as recurring expenses (editable estimates)."""
     added = []
-    for item in ARIA_STACK:
+    for item in NOVA_STACK:
         existing = db.query(Expense).filter(Expense.vendor == item["vendor"]).first()
         if existing:
             continue
         exp = Expense(
             amount=item["amount"], vendor=item["vendor"], category=item["category"],
             segment=item["segment"], recurrence=item["recurrence"],
-            description="ARIA tool stack", notes=item["notes"],
+            description="NOVA tool stack", notes=item["notes"],
             is_tax_deductible=True, date=datetime.utcnow(),
         )
         db.add(exp)
         db.flush()
         added.append(exp.id)
     db.commit()
-    return {"added": len(added), "skipped_existing": len(ARIA_STACK) - len(added)}
+    return {"added": len(added), "skipped_existing": len(NOVA_STACK) - len(added)}

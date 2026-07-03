@@ -16,7 +16,7 @@ from datetime import datetime, timedelta
 from typing import Optional
 
 from config import settings
-from agents.brain import think_structured, SANTA_CLARA_KNOWLEDGE
+from agents.brain import think_structured, BUSINESS_KNOWLEDGE
 
 VAPI_BASE = "https://api.vapi.ai"
 
@@ -70,7 +70,7 @@ def is_duplicate_number(db, phone: str, campaign_id: int = None) -> bool:
 
 
 async def build_assistant_script(goal: str, offer: str, qualifying_questions: list[str],
-                                 industry: str = "real estate") -> dict:
+                                 industry: str = "small business") -> dict:
     """Use Claude to turn a plain-English goal into a structured AI calling assistant config."""
     result = await think_structured(
         f"""Design an AI outbound calling assistant for a {industry} business.
@@ -79,7 +79,7 @@ Goal of the calls: {goal}
 Offer / service to introduce: {offer}
 Qualifying questions to ask: {json.dumps(qualifying_questions)}
 
-{SANTA_CLARA_KNOWLEDGE if industry == "real estate" else ""}
+{BUSINESS_KNOWLEDGE}
 
 Return JSON for a natural, professional phone assistant:
 {{

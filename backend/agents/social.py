@@ -7,7 +7,7 @@ import json
 import httpx
 from datetime import datetime
 from typing import Optional
-from agents.brain import think, SANTA_CLARA_KNOWLEDGE
+from agents.brain import think, BUSINESS_KNOWLEDGE
 from config import settings
 
 
@@ -22,38 +22,41 @@ async def generate_post_suite(
     """
     Generate a full suite of platform-specific posts from one brief.
 
-    content_type: "listing" | "market_update" | "just_sold" | "open_house" |
-                  "tip" | "testimonial" | "neighborhood" | "custom"
-    subject: e.g. "3bd/2ba in Los Gatos, listed at $1.495M"
+    content_type: "new_offer" | "industry_update" | "customer_win" | "promo" |
+                  "tip" | "testimonial" | "spotlight" | "custom"
+    subject: e.g. "New AI booking assistant for local service businesses"
     details: extra context dict
     """
     details_str = json.dumps(details or {}, indent=2)
 
     result = await think(
-        f"""You are Ruth Smith, top Santa Clara County listing agent. Create social media posts.
+        f"""You are the marketing voice for a small business owner. Create social media posts that
+attract leads and build trust. Adapt to whatever industry the subject implies — never assume real
+estate or any single field.
 
 Content type: {content_type}
 Subject: {subject}
 Details: {details_str}
 
-{SANTA_CLARA_KNOWLEDGE}
+{BUSINESS_KNOWLEDGE}
 
-Write platform-specific posts. Return JSON:
+Write platform-specific posts. Choose hashtags that fit the subject and industry.
+Return JSON:
 {{
   "instagram": {{
     "caption": "Compelling caption with line breaks. 150-200 words. Conversational, visual, emotional. End with CTA.",
-    "hashtags": "#SantaClara #LosGatosRealEstate #JustListed #SiliconValleyHomes #BayAreaRealEstate #CaliforniaRealEstate #RuthSmithRealEstate #HomesForSale #SantaClaraCounty #LuxuryRealEstate",
+    "hashtags": "8-12 relevant hashtags for this business/industry and post",
     "first_comment_hashtags": "Additional hashtags for first comment to keep caption clean",
     "story_text": "2-3 punchy lines for Instagram Stories overlay",
     "reel_hook": "First 3 seconds script to stop the scroll"
   }},
   "facebook": {{
-    "post": "Longer, more detailed. 200-300 words. Include specific details, tell a story, end with question to drive comments.",
+    "post": "Longer, more detailed. 200-300 words. Include specifics, tell a story, end with a question to drive comments.",
     "headline": "Short attention-grabbing headline (under 50 chars)",
     "link_description": "One-line description if sharing a link"
   }},
   "linkedin": {{
-    "post": "Professional tone. Lead with insight or data. 150-200 words. Real estate market angle. Good for sphere of influence.",
+    "post": "Professional tone. Lead with insight or a result. 150-200 words. Good for B2B and referral network.",
     "headline": "Professional headline for the post"
   }},
   "twitter_x": {{
@@ -61,21 +64,21 @@ Write platform-specific posts. Return JSON:
     "thread": ["Tweet 1/4 — hook", "Tweet 2/4 — detail", "Tweet 3/4 — insight", "Tweet 4/4 — CTA"]
   }},
   "youtube": {{
-    "title": "SEO-optimized video title (include location + keyword)",
-    "description": "Full YouTube description — 300 words, includes timestamps, links, keywords, CTA to subscribe and call Ruth",
-    "tags": ["Santa Clara County real estate", "Los Gatos homes for sale", "Bay Area market update"],
-    "script_outline": ["Intro (0:00) — hook and what viewer will learn", "Section 1 (1:00)", "Section 2 (2:30)", "CTA (4:00) — subscribe + call Ruth"],
+    "title": "SEO-optimized video title (include the topic + a keyword)",
+    "description": "Full YouTube description — 300 words, includes timestamps, links, keywords, CTA to subscribe and get in touch",
+    "tags": ["relevant", "industry", "keywords"],
+    "script_outline": ["Intro (0:00) — hook and what viewer will learn", "Section 1 (1:00)", "Section 2 (2:30)", "CTA (4:00) — subscribe + contact"],
     "thumbnail_text": "Bold text for thumbnail overlay (under 6 words)"
   }},
   "tiktok": {{
     "caption": "Short, punchy TikTok caption. Max 150 chars. Use 3-5 hashtags only.",
-    "hashtags": "#RealEstate #HomeTour #BayArea #SiliconValley #RealtorLife",
+    "hashtags": "3-5 relevant hashtags for this business/industry",
     "hook_script": "First 3 seconds spoken — must stop scroll immediately",
     "full_script": "30-60 second spoken script for the video. Energetic, fast-paced.",
     "trending_sounds_tip": "Suggest what type of audio works for this content"
   }},
-  "nextdoor": {{
-    "post": "Neighborly tone. Local focus. 100-150 words. No hard sell — provide value first."
+  "google_business": {{
+    "post": "Google Business Profile update. 100-150 words. Local, helpful, clear CTA (call/book/visit)."
   }}
 }}""",
     )
@@ -94,30 +97,31 @@ async def generate_video_script(
 ) -> dict:
     """
     Generate a full video script for YouTube or TikTok.
-    video_type: "market_update" | "listing_tour" | "tips" | "neighborhood_guide" | "q_and_a"
+    video_type: "industry_update" | "product_demo" | "tips" | "how_to" | "q_and_a"
     """
     result = await think(
-        f"""Write a complete {platform} video script for Ruth Smith, top Santa Clara County listing agent.
+        f"""Write a complete {platform} video script for a small business owner marketing their
+services. Adapt to whatever industry the topic implies — never assume real estate.
 
 Video type: {video_type}
 Topic: {topic}
 Target duration: {duration_minutes} minutes
 Platform: {platform}
 
-{SANTA_CLARA_KNOWLEDGE}
+{BUSINESS_KNOWLEDGE}
 
 Write a complete, word-for-word script including:
 - Hook (first 5-10 seconds — must be compelling)
 - Introduction
 - Main content sections with transitions
 - Data/stats to mention
-- Call to action at the end (subscribe + contact Ruth)
+- Call to action at the end (subscribe + get in touch)
 - On-screen text suggestions [in brackets]
 - B-roll suggestions (what to show visually)
 
 Format clearly with timestamps.
-Make it sound natural and conversational — how Ruth actually talks.
-Include specific Santa Clara County data to establish authority."""
+Make it sound natural and conversational.
+Include a specific, credible detail or result to establish authority."""
     )
     return {"platform": platform, "video_type": video_type, "topic": topic, "script": result}
 

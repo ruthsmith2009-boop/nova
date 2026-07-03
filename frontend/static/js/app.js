@@ -77,20 +77,18 @@ function navigate(page) {
 const pageTitles = {
   dashboard: 'Dashboard', leads: 'Leads & CRM', calllist: 'Daily Call List',
   automations: 'AI Automations — Live Demo',
-  listings: 'Listings', market: 'Market Research', documents: 'Documents & Disclosures',
-  marketing: 'Marketing', scripts: 'Scripts & Objections', calendar: 'Calendar'
+  marketing: 'Email & Newsletter', scripts: 'Scripts & Objections', calendar: 'Calendar'
 };
 
 // ─── Dashboard ────────────────────────────────────────────────────────────────
 async function renderDashboard() {
   try {
-    const [cfg, leadsData, listingsData, todayData] = await Promise.all([
+    const [cfg, leadsData, todayData] = await Promise.all([
       api('GET', '/config'),
       api('GET', '/leads/'),
-      api('GET', '/listings/'),
       api('GET', '/leads/today').catch(() => ({ counts: { followups_due: 0 } }))
     ]);
-    leads = leadsData; listings = listingsData;
+    leads = leadsData; listings = [];
 
     const apptsSet = leads.filter(l => l.stage === 'appointment_set').length;
     const inProgress = leads.filter(l => l.stage === 'listing_active' || l.stage === 'under_contract').length;
@@ -345,18 +343,6 @@ async function permDeleteLead(id) {
   } catch(e) { showAlert(e.message, 'error'); }
 }
 
-async function enrichLead(id) {
-  showAlert('Looking up property details from the address…', 'info');
-  try {
-    const res = await api('POST', `/leads/${id}/enrich`);
-    // refresh the lead in our cache
-    const fresh = await api('GET', `/leads/${id}`);
-    const idx = leads.findIndex(l => l.id === id);
-    if (idx >= 0) leads[idx] = fresh;
-    showAlert(`Property details updated (${res.enriched.enrichment_confidence||'auto'} confidence)`);
-    showLeadDetail(id);
-  } catch(e) { showAlert(e.message, 'error'); }
-}
 
 async function setLeadTemp(id, temp) {
   await api('PUT', `/leads/${id}/temperature?temperature=${temp}`);
@@ -556,113 +542,13 @@ async function clearDemo() {
 }
 
 // ─── Market Research ──────────────────────────────────────────────────────────
-async function renderMarket() {
-  document.getElementById('market-area').value = document.getElementById('market-area').value || 'Los Gatos';
-}
-
-async function runMarketSnapshot() {
-  const area = document.getElementById('market-area').value;
-  if (!area) return;
-  loading('market-result', `Pulling live market data for ${area}…`);
-  try {
-    const data = await api('GET', `/market/snapshot/${encodeURIComponent(area)}`);
-    document.getElementById('market-result').innerHTML = `
-      <div class="card">
-        <div class="card-header"><span class="card-title">${data.area} Market Snapshot</span><span style="font-size:12px;color:var(--muted)">As of ${data.as_of||'today'}</span></div>
-        <div class="stats-grid" style="margin-bottom:16px">
-          <div class="stat-card"><div class="stat-value">${data.median_price ? fmt$(data.median_price) : '—'}</div><div class="stat-label">Median Price</div></div>
-          <div class="stat-card"><div class="stat-value">${data.avg_days_on_market||'—'}</div><div class="stat-label">Avg Days on Market</div></div>
-          <div class="stat-card"><div class="stat-value">${data.absorption_rate_months||'—'} mo</div><div class="stat-label">Absorption Rate</div></div>
-          <div class="stat-card"><div class="stat-value">${data.list_to_sale_ratio ? (data.list_to_sale_ratio*100).toFixed(1)+'%' : '—'}</div><div class="stat-label">List-to-Sale Ratio</div></div>
-        </div>
-        <div><strong>Market Condition:</strong> ${data.market_condition||'—'}</div>
-        <div style="margin-top:8px"><strong>Trend:</strong> ${data.trend||'—'}</div>
-        ${data.key_insights ? `<div style="margin-top:12px"><strong>Key Insights:</strong><ul style="padding-left:16px;margin-top:6px;line-height:1.8">${data.key_insights.map(i=>`<li>${i}</li>`).join('')}</ul></div>` : ''}
-      </div>`;
-  } catch(e) {
-    document.getElementById('market-result').innerHTML = `<div class="alert alert-error">${e.message}</div>`;
-  }
-}
-
-function compRows(arr) {
-  return (arr||[]).map(c =>
-    `<tr><td>${c.address||'—'}</td><td><strong>${fmt$(c.sale_price)}</strong></td><td>${c.sale_date||'—'}</td><td>${c.bedrooms||'—'}/${c.bathrooms||'—'}</td><td>${c.sqft?.toLocaleString()||'—'} sqft</td><td>${c.days_on_market||'—'} DOM</td></tr>`
-  ).join('') || '<tr><td colspan="6" style="color:var(--muted);text-align:center">No comps from this source</td></tr>';
-}
-
-async function runCMA() {
-  const address = document.getElementById('cma-address').value;
-  const city = document.getElementById('cma-city').value;
-  const state = document.getElementById('cma-state')?.value || '';
-  const beds = document.getElementById('cma-beds').value;
-  const baths = document.getElementById('cma-baths').value;
-  const sqft = document.getElementById('cma-sqft').value;
-  if (!address) { showAlert('Enter a property address', 'error', '#cma-alert'); return; }
-  loading('cma-result', 'Running CMA — pulling 3 separate comp sets (Zillow, Redfin, MLS)…');
-  try {
-    const data = await api('POST', '/market/cma', {
-      address, city, state, bedrooms: beds ? parseInt(beds) : null,
-      bathrooms: baths ? parseFloat(baths) : null, sqft: sqft ? parseInt(sqft) : null
-    });
-    if (data.error) throw new Error(data.error);
-    const comps = compRows(data.comparable_sales);
-    document.getElementById('cma-result').innerHTML = `
-      <div class="card">
-        <div class="card-header"><span class="card-title">CMA — ${data.subject_property}</span></div>
-        <div class="stats-grid" style="margin-bottom:16px">
-          <div class="stat-card"><div class="stat-value">${fmt$(data.suggested_list_price_low)}</div><div class="stat-label">Conservative</div></div>
-          <div class="stat-card" style="border:2px solid var(--primary)"><div class="stat-value" style="color:var(--primary)">${fmt$(data.recommended_list_price)}</div><div class="stat-label">Recommended</div></div>
-          <div class="stat-card"><div class="stat-value">${fmt$(data.suggested_list_price_high)}</div><div class="stat-label">Aggressive</div></div>
-          <div class="stat-card"><div class="stat-value">${data.avg_days_on_market||'—'}</div><div class="stat-label">Avg DOM</div></div>
-        </div>
-        <p style="margin-bottom:12px">${data.pricing_rationale||''}</p>
-        ${data.source_estimates?`<div class="stats-grid" style="grid-template-columns:repeat(3,1fr);margin-bottom:16px">
-          <div class="stat-card"><div class="stat-value" style="font-size:20px">${fmt$(data.source_estimates.zillow_estimate)}</div><div class="stat-label">Zillow Estimate</div></div>
-          <div class="stat-card"><div class="stat-value" style="font-size:20px">${fmt$(data.source_estimates.redfin_estimate)}</div><div class="stat-label">Redfin Estimate</div></div>
-          <div class="stat-card"><div class="stat-value" style="font-size:20px">${fmt$(data.source_estimates.mls_comp_based)}</div><div class="stat-label">MLS Comps</div></div>
-        </div>${data.source_estimates.spread_note?`<div class="alert alert-info" style="margin-bottom:12px">📊 ${data.source_estimates.spread_note}</div>`:''}`:''}
-        <div class="tabs" id="cma-tabs">
-          <div class="tab active" onclick="switchTab('cma-tabs','comps')">3 Comp Sources</div>
-          <div class="tab" onclick="switchTab('cma-tabs','strategy')">Strategy</div>
-          <div class="tab" onclick="switchTab('cma-tabs','netsheet')">Net Sheet</div>
-        </div>
-        <div id="cma-tabs-comps" class="tab-content active">
-          <p style="font-size:13px;color:var(--muted);margin-bottom:10px">Each source values homes differently — showing all three side-by-side builds trust with sellers.</p>
-          <h3 style="font-size:14px;margin:8px 0 4px">🟦 Zillow Comps</h3>
-          <div class="table-wrap"><table><thead><tr><th>Address</th><th>Price</th><th>Date</th><th>Bd/Ba</th><th>Sqft</th><th>DOM</th></tr></thead><tbody>${compRows(data.zillow_comps)}</tbody></table></div>
-          <h3 style="font-size:14px;margin:14px 0 4px">🟥 Redfin Comps</h3>
-          <div class="table-wrap"><table><thead><tr><th>Address</th><th>Price</th><th>Date</th><th>Bd/Ba</th><th>Sqft</th><th>DOM</th></tr></thead><tbody>${compRows(data.redfin_comps)}</tbody></table></div>
-          <h3 style="font-size:14px;margin:14px 0 4px">🟩 MLS Comps</h3>
-          <div class="table-wrap"><table><thead><tr><th>Address</th><th>Price</th><th>Date</th><th>Bd/Ba</th><th>Sqft</th><th>DOM</th></tr></thead><tbody>${compRows(data.mls_comps)}</tbody></table></div>
-        </div>
-        <div id="cma-tabs-strategy" class="tab-content">
-          <div style="margin-bottom:12px"><strong>Aggressive:</strong> ${data.aggressive_strategy||'—'}</div>
-          <div style="margin-bottom:12px"><strong>Recommended:</strong> ${data.recommended_strategy||'—'}</div>
-          <div><strong>Conservative:</strong> ${data.conservative_strategy||'—'}</div>
-        </div>
-        <div id="cma-tabs-netsheet" class="tab-content">
-          ${data.estimated_net_proceeds ? `
-          <table><thead><tr><th>Item</th><th>Amount</th></tr></thead><tbody>
-            <tr><td>Estimated Sale Price</td><td>${fmt$(data.estimated_net_proceeds.sale_price)}</td></tr>
-            <tr><td>Agent Commission</td><td style="color:var(--danger)">-${fmt$(data.estimated_net_proceeds.agent_commission_total)}</td></tr>
-            <tr><td>Title & Escrow</td><td style="color:var(--danger)">-${fmt$(data.estimated_net_proceeds.title_escrow_fees)}</td></tr>
-            <tr><td>Transfer Tax</td><td style="color:var(--danger)">-${fmt$(data.estimated_net_proceeds.transfer_tax)}</td></tr>
-            <tr><td>Misc Closing</td><td style="color:var(--danger)">-${fmt$(data.estimated_net_proceeds.misc_closing)}</td></tr>
-            <tr style="font-weight:800;background:rgba(91,157,217,0.10)"><td>Estimated Net Proceeds</td><td style="color:var(--success)">${fmt$(data.estimated_net_proceeds.estimated_net)}</td></tr>
-          </tbody></table>` : '<p>Net sheet data not available</p>'}
-        </div>
-      </div>`;
-  } catch(e) {
-    document.getElementById('cma-result').innerHTML = `<div class="alert alert-error">${e.message}</div>`;
-  }
-}
 
 // ─── Scripts & Objections ─────────────────────────────────────────────────────
 async function handleObjection(leadId = null) {
   showModal(`
     <div class="modal-header"><span class="modal-title">Objection Handler</span><button class="modal-close" onclick="closeModal()">×</button></div>
-    <div class="form-group"><label>What did the seller say?</label>
-      <textarea id="objection-text" rows="3" placeholder="e.g. Your commission is too high / I want to wait / My neighbor sold for more"></textarea>
+    <div class="form-group"><label>What did the prospect say?</label>
+      <textarea id="objection-text" rows="3" placeholder="e.g. It's too expensive / I want to wait / We already have someone"></textarea>
     </div>
     <div id="objection-alert"></div>
     <button class="btn btn-primary" style="width:100%" onclick="submitObjection(${leadId})">Get Response Strategy</button>
@@ -694,7 +580,7 @@ async function generateNewsletter() {
 }
 
 async function generateSequence(leadId) {
-  const seqType = prompt('Sequence type? (new_lead / post_appointment / active_listing / under_contract / closed)', 'new_lead');
+  const seqType = prompt('Sequence type? (new_lead / post_meeting / active_deal / proposal_sent / won)', 'new_lead');
   if (!seqType) return;
   loading('marketing-result', 'Writing email sequence…');
   navigate('marketing');
@@ -712,28 +598,6 @@ async function generateSequence(leadId) {
   } catch(e) { document.getElementById('marketing-result').innerHTML = `<div class="alert alert-error">${e.message}</div>`; }
 }
 
-// ─── Documents ────────────────────────────────────────────────────────────────
-async function generateDocuments() {
-  const address = document.getElementById('doc-address').value;
-  const city = document.getElementById('doc-city').value;
-  const price = document.getElementById('doc-price').value;
-  const beds = document.getElementById('doc-beds').value;
-  const baths = document.getElementById('doc-baths').value;
-  const sellerName = document.getElementById('doc-seller').value;
-  if (!address || !price) { showAlert('Address and price required', 'error', '#doc-alert'); return; }
-  loading('doc-result', 'Generating California disclosure documents…');
-  try {
-    const listing = { address, city, zip_code: '', list_price: parseFloat(price), bedrooms: parseInt(beds)||3, bathrooms: parseFloat(baths)||2, sqft: 1500, property_type: 'Single Family Residence', hoa_fee: 0 };
-    const seller = { full_name: sellerName };
-    const listingRes = await api('POST', '/listings/', { ...listing, zip_code: '95000' });
-    const docs = await api('POST', `/listings/${listingRes.id}/documents`);
-    document.getElementById('doc-result').innerHTML = `
-      <div class="alert alert-success">Generated ${docs.documents?.length||0} documents</div>
-      ${(docs.documents||[]).map(d => `<div class="card" style="margin-bottom:8px"><div class="card-header"><span class="card-title">${d.type}</span><span class="badge badge-active">${d.status}</span></div><div style="font-size:12px;color:var(--muted)">Saved to: ${d.file}</div></div>`).join('')}
-      <div style="margin-top:12px"><strong>⚠ Required Actions:</strong></div>
-      ${(docs.flags||[]).map(f => `<div class="flag">${f}</div>`).join('')}`;
-  } catch(e) { document.getElementById('doc-result').innerHTML = `<div class="alert alert-error">${e.message}</div>`; }
-}
 
 // ─── Upload CSV ───────────────────────────────────────────────────────────────
 async function uploadLeads() {
@@ -778,7 +642,7 @@ function closeModal() { document.querySelector('.modal-overlay')?.remove(); }
 // ─── Social Media ─────────────────────────────────────────────────────────────
 const PLATFORM_ICONS = {
   facebook:'📘', instagram:'📸', twitter:'🐦', linkedin:'💼',
-  youtube:'▶', tiktok:'🎵', nextdoor:'🏘'
+  youtube:'▶', tiktok:'🎵', google_business:'🔎'
 };
 
 function switchSocialTab(tab) {
@@ -799,7 +663,7 @@ async function loadPlatformStatus() {
       const isReady = configured === true;
       const isManual = configured === 'manual_upload';
       return `<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border)">
-        <span style="font-size:15px">${PLATFORM_ICONS[platform]||'📱'} <strong>${platform.charAt(0).toUpperCase()+platform.slice(1)}</strong></span>
+        <span style="font-size:15px">${PLATFORM_ICONS[platform]||'📱'} <strong>${platform.replace(/_/g,' ').replace(/\b\w/g,c=>c.toUpperCase())}</strong></span>
         <span class="badge ${isReady ? 'badge-active' : isManual ? 'badge-b' : 'badge-d'}">
           ${isReady ? '✅ Connected' : isManual ? '📤 Manual Upload' : '⚠ Not Connected'}
         </span>
@@ -824,13 +688,13 @@ async function generateSocialPosts() {
     const content = res.content;
     const postId = res.post_id;
 
-    const platformOrder = ['instagram','facebook','linkedin','twitter_x','youtube','tiktok','nextdoor'];
+    const platformOrder = ['instagram','facebook','linkedin','twitter_x','youtube','tiktok','google_business'];
     let html = `<div class="alert alert-success" style="margin-bottom:16px">✅ Posts generated! Post ID #${postId} — review each platform below, then approve to publish.</div>`;
 
     platformOrder.forEach(platform => {
       const data = content[platform];
       if (!data) return;
-      const displayName = platform === 'twitter_x' ? 'Twitter / X' : platform.charAt(0).toUpperCase()+platform.slice(1);
+      const displayName = platform === 'twitter_x' ? 'Twitter / X' : platform === 'google_business' ? 'Google Business' : platform.charAt(0).toUpperCase()+platform.slice(1);
       const icon = PLATFORM_ICONS[platform.replace('_x','')] || '📱';
 
       let contentHtml = '';
@@ -857,11 +721,11 @@ async function generateSocialPosts() {
           <div class="form-group"><label>Hook (first 3 sec)</label><div style="font-weight:700;font-style:italic">"${data.hook_script||''}"</div></div>
           <div class="form-group"><label>Full Script</label><div class="ai-output" style="font-size:12px">${data.full_script||''}</div></div>
           <div class="form-group"><label>Audio Tip</label><div style="font-size:12px;color:var(--muted)">${data.trending_sounds_tip||''}</div></div>`;
-      } else if (platform === 'nextdoor') {
-        contentHtml = `<div class="form-group"><label>Nextdoor Post</label><div class="ai-output" style="font-size:13px">${data.post||''}</div></div>`;
+      } else if (platform === 'google_business') {
+        contentHtml = `<div class="form-group"><label>Google Business Post</label><div class="ai-output" style="font-size:13px">${data.post||''}</div></div>`;
       }
 
-      const isManual = ['youtube','tiktok','nextdoor'].includes(platform);
+      const isManual = ['youtube','tiktok','google_business'].includes(platform);
       html += `<div class="card" style="margin-bottom:16px">
         <div class="card-header">
           <span class="card-title">${icon} ${displayName}</span>
@@ -1137,16 +1001,16 @@ function initLeadGen() {
   if (typeSel && !typeSel.dataset.bound) {
     typeSel.dataset.bound = '1';
     typeSel.addEventListener('change', () => {
-      document.getElementById('lg-niche-wrap').style.display =
-        typeSel.value === 'ai_service_clients' ? 'block' : 'none';
+      // Niche/industry helps every hunt type — keep it visible.
+      document.getElementById('lg-niche-wrap').style.display = 'block';
     });
   }
   loadSchedules();
 }
 
 const HUNT_LABELS = {
-  seller_leads: '🏡 Seller / Listing', fsbo: '🏷️ FSBO', expired_fsbo: '🔥 Expired & FSBO',
-  distressed: '⚠️ Distressed', ai_service_clients: '💼 AI-Service',
+  ideal_clients: '🎯 Ideal Clients', local_businesses: '🏢 Local Businesses',
+  referral_partners: '🤝 Referral Partners',
 };
 
 async function createSchedule() {
@@ -1229,36 +1093,31 @@ async function runHunt() {
       return;
     }
     if (!res.leads || !res.leads.length) {
-      document.getElementById('lg-results').innerHTML = `<div class="alert alert-info">No real leads found in public sources for this search. Try a different area, or connect a paid provider for verified homeowner lists.</div>`;
+      document.getElementById('lg-results').innerHTML = `<div class="alert alert-info">No real prospects found in public sources for this search. Try a different area or niche, or connect a paid provider for verified business contacts.</div>`;
       return;
     }
 
-    const isBiz = hunt_type === 'ai_service_clients';
     const rows = res.leads.map((l, i) => {
       const contact = l.contact_status === 'found'
         ? '<span class="badge badge-a">✓ Has Contact</span>'
-        : '<span class="badge badge-c">Needs Skip Trace</span>';
-      if (isBiz) {
-        return `<tr><td>${i+1}</td><td><strong>${l.business_name||'—'}</strong><br><span style="font-size:11px;color:var(--muted)">${l.contact_name||''}</span></td>
-          <td>${l.phone||'—'}<br>${l.email||''}</td><td style="font-size:12px;max-width:280px">${l.why_good_fit||''}</td><td>${contact}</td></tr>`;
-      }
-      return `<tr><td>${i+1}</td><td><strong>${(l.first_name||'')+' '+(l.last_name||'')}</strong><br><span style="font-size:11px;color:var(--muted)">${l.address||''} ${l.city||''}</span></td>
-        <td>${l.phone||'—'}<br>${l.email||''}</td><td style="font-size:12px;max-width:280px">${l.sell_signal||(l.has_expired_listing?'Expired listing':'')||''}</td><td>${contact}</td></tr>`;
+        : '<span class="badge badge-c">Needs Research</span>';
+      return `<tr><td>${i+1}</td><td><strong>${l.business_name||'—'}</strong><br><span style="font-size:11px;color:var(--muted)">${l.contact_name||''} ${l.city||''}</span></td>
+        <td>${l.phone||'—'}<br>${l.email||''}</td><td style="font-size:12px;max-width:280px">${l.why_good_fit||''}</td><td>${contact}</td></tr>`;
     }).join('');
 
     document.getElementById('lg-results').innerHTML = `
       <div class="card">
         <div class="card-header">
-          <span class="card-title">Found ${res.total} Leads</span>
+          <span class="card-title">Found ${res.total} Prospects</span>
           <button class="btn btn-success" onclick="saveHunt('${hunt_type}')">＋ Add All to CRM (scored)</button>
         </div>
         <div class="stats-grid" style="grid-template-columns:repeat(3,1fr);margin-bottom:14px">
           <div class="stat-card"><div class="stat-value">${res.total}</div><div class="stat-label">Found</div></div>
           <div class="stat-card"><div class="stat-value" style="color:var(--success)">${res.with_contact}</div><div class="stat-label">With Contact</div></div>
-          <div class="stat-card"><div class="stat-value" style="color:var(--warning)">${res.needs_skip_trace}</div><div class="stat-label">Needs Skip Trace</div></div>
+          <div class="stat-card"><div class="stat-value" style="color:var(--warning)">${res.needs_research}</div><div class="stat-label">Needs Research</div></div>
         </div>
         ${res.note ? `<div class="alert alert-info" style="margin-bottom:12px">${res.note}</div>` : ''}
-        <div class="table-wrap"><table><thead><tr><th>#</th><th>${isBiz?'Business':'Owner'}</th><th>Contact</th><th>${isBiz?'Why a fit':'Sell Signal'}</th><th>Status</th></tr></thead><tbody>${rows}</tbody></table></div>
+        <div class="table-wrap"><table><thead><tr><th>#</th><th>Business</th><th>Contact</th><th>Why a fit</th><th>Status</th></tr></thead><tbody>${rows}</tbody></table></div>
       </div>`;
   } catch(e) { document.getElementById('lg-results').innerHTML = `<div class="alert alert-error">${e.message}</div>`; }
 }
@@ -1272,7 +1131,7 @@ async function saveHunt(hunt_type) {
 }
 
 // ─── Finance ──────────────────────────────────────────────────────────────────
-const SEGMENT_LABELS = { real_estate:'🏡 Real Estate', ai_tech:'🤖 AI / Tech', shared:'🔗 Shared' };
+const SEGMENT_LABELS = { business:'🏢 Business', ai_tech:'🤖 AI / Tech', shared:'🔗 Shared' };
 
 async function loadFinance() {
   await loadFinanceSummary();
@@ -1304,7 +1163,7 @@ async function loadFinanceSummary() {
     const s = await api('GET', '/finance/summary');
     document.getElementById('finance-stats').innerHTML = `
       <div class="stat-card"><div class="stat-value">${fmt$(s.monthly_recurring_burn)}</div><div class="stat-label">Monthly Recurring Burn</div><div class="stat-change">${fmt$(s.annual_recurring)}/yr</div></div>
-      <div class="stat-card"><div class="stat-value">${fmt$(s.by_segment.real_estate)}</div><div class="stat-label">🏡 Real Estate Total</div></div>
+      <div class="stat-card"><div class="stat-value">${fmt$(s.by_segment.business)}</div><div class="stat-label">🏢 Business Total</div></div>
       <div class="stat-card"><div class="stat-value">${fmt$(s.by_segment.ai_tech)}</div><div class="stat-label">🤖 AI / Tech Total</div></div>
       <div class="stat-card"><div class="stat-value" style="color:var(--success)">${fmt$(s.deductible_ytd)}</div><div class="stat-label">Tax-Deductible YTD</div></div>`;
     // Breakdown by category
@@ -1364,7 +1223,6 @@ const pageRenderers = {
   dashboard: renderDashboard,
   leads: renderLeads,
   calllist: renderCallList,
-  market: renderMarket,
   social: () => loadPlatformStatus(),
   calling: () => { loadCampaigns(); if (!leads.length) renderLeads(); },
   leadgen: initLeadGen,

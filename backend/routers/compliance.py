@@ -1,4 +1,4 @@
-"""Compliance router — the Attorney sub-agent's safety check on real-estate content."""
+"""Compliance router — the Compliance sub-agent's safety check on sales & marketing content."""
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 from typing import Optional

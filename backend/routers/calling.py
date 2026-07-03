@@ -24,7 +24,7 @@ class CampaignCreate(BaseModel):
     offer: str
     qualifying_questions: list[str] = []
     lead_ids: list[int] = []
-    industry: str = "real estate"
+    industry: str = "small business"
     call_window_start: str = "09:00"
     call_window_end: str = "18:00"
     max_attempts: int = 3
@@ -34,8 +34,8 @@ class CampaignCreate(BaseModel):
 class SingleCallRequest(BaseModel):
     lead_id: Optional[int] = None
     phone: Optional[str] = None
-    goal: str = "Qualify the seller and book a listing appointment"
-    offer: str = "A free home valuation and listing consultation"
+    goal: str = "Qualify the prospect and book a quick intro call"
+    offer: str = "A free, no-pressure consultation"
 
 
 # ── Campaign CRUD + control ───────────────────────────────────────────────────
@@ -179,7 +179,7 @@ async def single_call(req: SingleCallRequest, db: Session = Depends(get_db)):
     if not phone:
         raise HTTPException(400, "No phone number provided")
 
-    script = await build_assistant_script(req.goal, req.offer, [], "real estate")
+    script = await build_assistant_script(req.goal, req.offer, [], "small business")
     record = CallRecord(lead_id=req.lead_id, phone_number=normalize_phone(phone),
                         provider="vapi", status="queued", started_at=datetime.utcnow())
     db.add(record)

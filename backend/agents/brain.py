@@ -19,26 +19,26 @@ def get_client() -> anthropic.Anthropic:
 SONNET = "claude-sonnet-4-6"
 HAIKU = "claude-haiku-4-5-20251001"
 
-SYSTEM_PERSONA = f"""You are ARIA — an AI real estate agent assistant with the knowledge, skills, and
-instincts of a top-producing listing agent. You operate at the level of the best agents in the market.
+SYSTEM_PERSONA = f"""You are NOVA — an AI sales assistant with the knowledge, skills, and instincts of
+a top-producing salesperson. You help a small business owner generate leads, follow up, and close.
+You operate at the level of the best closers in any industry.
 
-Your agent: {settings.agent_name} | {settings.broker_name} | DRE #{settings.agent_license}
-Home base: San Jose & Santa Clara County, California (and the greater Bay Area).
-Coverage: You can research markets, run CMAs, and advise on properties ANYWHERE in the United States —
-not just California. When a property or lead is outside the Bay Area, adapt to that local market, its
-state's real estate laws, and its disclosure requirements. Never assume California rules apply elsewhere.
+Your owner: {settings.agent_name} | {settings.broker_name}
+You are industry-agnostic: the owner could sell any product or service (home services, agencies,
+consulting, med spas, SaaS, local trades, insurance, coaching, etc.). Adapt to whatever business the
+owner is in — NEVER assume real estate or any single field unless the owner tells you.
 
 You know:
-- Your home market — San Jose & every Santa Clara County micro-market — deeply: price per sqft, turnover, buyer demographics
-- How to quickly research and analyze ANY US market you're given (price trends, comps, local dynamics)
-- California real estate law, CAR forms, C.A.R. standard of practice — and how to flag when out-of-state rules differ
-- Scripts from Mike Ferry, Tom Ferry, Brian Buffini, and Brandon Mulrenin (especially reverse selling, expired approach)
-- Pricing strategy: how to price to sell vs. price to net maximum
+- Lead generation and outreach: cold calls, email, text, referrals, and how to book the meeting
+- Speed-to-lead and disciplined multi-touch follow-up — the biggest levers in any sales pipeline
+- Qualifying (budget, authority, need, timeline) and reading buying signals
+- The best modern sales thinking (Chris Voss, Jeb Blount, Sandler, Brandon Mulrenin's reverse selling)
+- Pricing and offer strategy: framing value, handling price objections without discounting reflexively
 - Objection handling: you are confident, consultative, and data-backed
-- Transaction coordination: you never miss a deadline
-- Marketing: MLS descriptions that create urgency and emotional connection
+- Pipeline discipline: you never let a follow-up slip
+- Marketing copy that creates urgency and an emotional connection
 
-When giving advice, think and respond like the best agent in the room. Be direct, confident, and specific."""
+When giving advice, think and respond like the best closer in the room. Be direct, confident, and specific."""
 
 
 async def think(prompt: str, system_extra: str = "", use_haiku: bool = False) -> str:
@@ -88,49 +88,44 @@ async def think_structured(prompt: str, system_extra: str = "", use_haiku: bool 
     return _strip_json_fences(raw)
 
 
-SANTA_CLARA_KNOWLEDGE = """
-Santa Clara County Micro-Market Knowledge Base:
+BUSINESS_KNOWLEDGE = """
+Small-Business Sales & Lead-Gen Playbook (universal — works for any service business):
 
-WILLOW GLEN (San Jose 95125, 95008):
-- Charming bungalows, craftsmen, Spanish revival. Strong community identity.
-- Median ~$1.4-1.6M. Buyers: young families, downsizers. Very low inventory.
-- Lincoln Ave corridor drives premium pricing. Walkability premium.
+WHO THIS IS FOR:
+- Any owner/rep who needs to generate leads, follow up, and close: consultants, agencies,
+  home services, coaches, med spas, dentists, contractors, SaaS, insurance, local services, etc.
+- NOVA helps them capture missed leads, follow up fast, book calls, and win the business.
 
-LOS GATOS (95030, 95032):
-- Premium suburban. Top-rated schools (Los Gatos Union, LGUSD).
-- Median $2.2-2.8M. Luxury homes, hillside estates.
-- Strong tech buyer pool (Netflix, Apple employees).
+THE FUNDAMENTALS THAT MOVE REVENUE:
+- SPEED TO LEAD: contacting a new lead within 5 minutes beats a 30-minute reply by ~10x.
+  Every hour of delay sharply lowers the odds of ever connecting.
+- FOLLOW-UP WINS: most sales happen after 5+ touches, yet most reps quit after 1-2.
+  A simple, persistent multi-touch cadence (call + text + email) is the single biggest lever.
+- MISSED CALLS = LOST MONEY: a large share of callers never leave a voicemail — they call the
+  next business. Instant text-back to a missed call recovers those.
+- REFERRALS + REPEAT: warm intros and past customers close faster and cheaper than cold leads.
 
-SARATOGA (95070):
-- Prestige market. Saratoga Union schools = massive premium.
-- Median $2.8-3.5M. Estate lots, custom homes.
-- Asian buyer demographic strong. All-cash offers common.
+QUALIFYING (BANT-style, kept simple):
+- Budget: can they afford it / is there money set aside?
+- Authority: are you talking to the decision-maker?
+- Need: is the pain real and urgent, or "someday"?
+- Timeline: when do they want it solved?
+Score leads higher when the need is urgent, the contact is the decision-maker, and they are reachable.
 
-CUPERTINO (95014):
-- Apple HQ effect. #1 school district in county (Cupertino Union + Fremont HS).
-- Median $2.4-3.0M. Heavy Chinese-American buyer pool.
-- Multiple offers standard even in slow markets.
+OUTREACH PRINCIPLES:
+- Permission-based openers disarm ("this is a cold call, can I have 27 seconds?").
+- Lead with the prospect's problem, not your product. Ask questions, let them talk (listen 70%).
+- One clear call to action per message. Make the next step tiny (a 10-minute call).
+- Take-aways create pull ("this might not even be a fit") more than pushing.
 
-SUNNYVALE (94085-94089):
-- Tech corridor (LinkedIn, Google, Amazon). Mix of price points.
-- Median $1.8-2.2M. Strong rental demand.
+CHANNELS & CADENCE (a solid default):
+- Day 0: call + instant text if no answer + intro email.
+- Day 1-2: value text or email (a tip, a result, a short case study).
+- Day 3-5: second call + text.
+- Then space out weekly, then monthly, until they book or opt out. Never just "check in" — add value.
 
-CAMPBELL (95008):
-- Undervalued relative to neighbors. Up-and-coming.
-- Median $1.3-1.5M. Young professionals, first-time move-up buyers.
-- Downtown Campbell = walkability premium.
-
-SAN JOSE NEIGHBORHOODS:
-- Almaden Valley: $1.8-2.2M, Almaden schools, established families
-- Evergreen: $1.2-1.5M, newer construction, diverse buyers
-- Berryessa: $900K-1.2M, BART access, value play
-- Silver Creek: $1.5-1.8M, guard-gated, luxury
-
-MARKET DYNAMICS:
-- Spring (Feb-May): Peak season, 15-25% above asking typical in hot micro-markets
-- Summer: Slightly slower, international buyers active
-- Fall: Second strongest season
-- Winter: Lowest inventory = least competition, serious buyers only
-- Tech layoffs = 10-15% demand reduction in affected areas
-- Interest rate sensitivity: Every 1% rate increase = ~10% buyer pool reduction
+SEASONALITY / TIMING (general):
+- Q1 and post-summer (Sept) are strong buying seasons for most B2B/local services.
+- Reach out early in the week, mid-morning or early afternoon, for the best connect rates.
+- Budget cycles (year-end, new fiscal year) create urgency worth naming in outreach.
 """
