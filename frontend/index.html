@@ -45,6 +45,9 @@
       <div class="nav-item" data-page="leadgen" onclick="navigate('leadgen')">
         <span class="icon">🎯</span><span>Lead Generator</span>
       </div>
+      <div class="nav-item" data-page="prospect" onclick="navigate('prospect')">
+        <span class="icon">🔎</span><span>Prospect Research</span>
+      </div>
       <div class="nav-item" data-page="calling" onclick="navigate('calling')">
         <span class="icon">🤖</span><span>AI Calling</span>
       </div>
@@ -387,6 +390,32 @@
           </div>
           <div id="lg-schedules"></div>
         </div>
+      </div>
+
+      <!-- PROSPECT RESEARCH (paste-and-research) -->
+      <div id="page-prospect" class="page">
+        <div class="card" style="margin-bottom:20px">
+          <div class="card-header"><span class="card-title">🔎 Prospect Research</span></div>
+          <p style="font-size:13px;color:var(--muted);margin-bottom:6px">The safe way to work a LinkedIn profile. <strong>You</strong> open the profile and copy the text; NOVA does the research and writes your outreach. No scraping, no bots — your account stays safe.</p>
+          <p style="font-size:12px;color:var(--muted);margin-bottom:16px">On the profile page press <strong>⌘A</strong> (select all) then <strong>⌘C</strong> (copy), and paste below. The About + Experience sections are the most useful.</p>
+          <div class="form-group">
+            <label>Paste the prospect's profile text</label>
+            <textarea id="pr-text" rows="8" placeholder="Paste a LinkedIn profile, a company About page, or a directory listing here…"></textarea>
+          </div>
+          <div class="grid-2">
+            <div class="form-group">
+              <label>What you sell (so outreach is accurate)</label>
+              <input id="pr-offer" placeholder="e.g. AI automation that recovers missed calls & follows up leads">
+            </div>
+            <div class="form-group">
+              <label>Their industry / niche (optional)</label>
+              <input id="pr-niche" placeholder="e.g. med spa, law firm, home services">
+            </div>
+          </div>
+          <div id="pr-alert"></div>
+          <button class="btn btn-accent" onclick="researchProfile()">🔎 Research &amp; Write Outreach</button>
+        </div>
+        <div id="pr-results"></div>
       </div>
 
       <!-- AI CALLING -->

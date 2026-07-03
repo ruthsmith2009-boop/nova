@@ -76,7 +76,7 @@ function navigate(page) {
 
 const pageTitles = {
   dashboard: 'Dashboard', leads: 'Leads & CRM', calllist: 'Daily Call List',
-  automations: 'AI Automations — Live Demo',
+  automations: 'AI Automations — Live Demo', prospect: 'Prospect Research',
   marketing: 'Email & Newsletter', scripts: 'Scripts & Objections', calendar: 'Calendar'
 };
 
@@ -1130,6 +1130,84 @@ async function saveHunt(hunt_type) {
   } catch(e) { showAlert(e.message, 'error'); }
 }
 
+// ─── Prospect Research (paste-and-research) ────────────────────────────────────
+let lastProfileResearch = null;
+
+function escHtml(s) {
+  return String(s == null ? '' : s).replace(/[&<>"']/g, c =>
+    ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c]));
+}
+
+async function researchProfile() {
+  const profile_text = document.getElementById('pr-text').value.trim();
+  const offer = document.getElementById('pr-offer').value.trim();
+  const niche = document.getElementById('pr-niche').value.trim();
+  if (profile_text.length < 20) { showAlert('Paste a bit more of the profile first.', 'error', '#pr-alert'); return; }
+  document.getElementById('pr-results').innerHTML = `<div class="loading-overlay"><div class="spinner"></div>Reading the profile, researching, and writing your outreach…</div>`;
+  try {
+    const res = await api('POST', '/leadgen/research-profile', { profile_text, offer, niche, enrich: true });
+    if (res.error) { document.getElementById('pr-results').innerHTML = `<div class="alert alert-warning">${escHtml(res.error)}</div>`; return; }
+    lastProfileResearch = res;
+    renderProfileResearch(res);
+  } catch(e) { document.getElementById('pr-results').innerHTML = `<div class="alert alert-error">${escHtml(e.message)}</div>`; }
+}
+
+function copyBox(id) {
+  const el = document.getElementById(id);
+  if (el) { navigator.clipboard.writeText(el.innerText || el.textContent).then(() => showAlert('Copied to clipboard')); }
+}
+
+function renderProfileResearch(res) {
+  const p = res.parsed || {}, s = res.score || {}, o = res.outreach || {};
+  const name = `${p.first_name||''} ${p.last_name||''}`.trim() || 'Prospect';
+  const score = Math.round(s.final_score || 0);
+  const signals = (p.signals || []).map(x => `<li>${escHtml(x)}</li>`).join('') || '<li style="color:var(--muted)">No standout signals in the paste.</li>';
+  const ctx = (res.web_context || []).filter(c => c.url).map(c =>
+    `<li><a href="${escHtml(c.url)}" target="_blank" rel="noopener" style="color:var(--accent)">${escHtml(c.title||c.url)}</a></li>`).join('')
+    || '<li style="color:var(--muted)">No extra public context found.</li>';
+
+  const box = (title, id, text, note='') => `
+    <div class="card" style="margin-bottom:14px">
+      <div class="card-header"><span class="card-title">${title}</span>
+        <button class="btn btn-ghost btn-sm" onclick="copyBox('${id}')">📋 Copy</button></div>
+      ${note ? `<p style="font-size:11px;color:var(--muted);margin-bottom:8px">${note}</p>` : ''}
+      <div id="${id}" class="ai-output" style="white-space:pre-wrap">${escHtml(text||'—')}</div>
+    </div>`;
+
+  document.getElementById('pr-results').innerHTML = `
+    <div class="card" style="margin-bottom:16px">
+      <div class="card-header">
+        <span class="card-title">${escHtml(name)} ${scoreGrade(score)}</span>
+        <button class="btn btn-success" onclick="saveProfileLead()">＋ Add to CRM (scored)</button>
+      </div>
+      <p style="font-size:13px;color:var(--muted);margin:2px 0 10px">${escHtml([p.title, p.company, p.location].filter(Boolean).join(' · '))}</p>
+      ${scoreBar(score)}
+      <p style="margin:12px 0 6px">${escHtml(p.summary||'')}</p>
+      <div class="grid-2" style="margin-top:12px">
+        <div><strong style="font-size:12px">Signals</strong><ul style="font-size:13px;margin:6px 0 0 18px">${signals}</ul></div>
+        <div><strong style="font-size:12px">Extra public context</strong><ul style="font-size:13px;margin:6px 0 0 18px">${ctx}</ul></div>
+      </div>
+      ${(p.email||p.phone) ? `<p style="font-size:12px;color:var(--muted);margin-top:10px">Contact in paste: ${escHtml([p.email,p.phone].filter(Boolean).join(' · '))}</p>` : ''}
+    </div>
+    ${o.why_this_works ? `<div class="alert alert-info" style="margin-bottom:14px">💡 ${escHtml(o.why_this_works)}</div>` : ''}
+    ${box('🤝 LinkedIn Connection Note', 'pr-note', o.connection_note, 'Fits LinkedIn\'s ~300-character limit. Review before sending.')}
+    ${box('💬 LinkedIn Message', 'pr-dm', o.dm, 'Send after they accept, or as an InMail.')}
+    ${box('✉️ Cold Email', 'pr-email', (o.email_subject ? 'Subject: ' + o.email_subject + '\n\n' : '') + (o.email_body||''), 'You send this yourself — review it first.')}`;
+}
+
+async function saveProfileLead() {
+  if (!lastProfileResearch) return;
+  try {
+    const res = await api('POST', '/leadgen/research-profile/save', {
+      lead_data: lastProfileResearch.lead_data,
+      parsed: lastProfileResearch.parsed,
+      outreach: lastProfileResearch.outreach,
+    });
+    if (res.status === 'duplicate') showAlert('Already in your CRM — skipped as a duplicate.', 'info');
+    else showAlert(`✅ Added to CRM (scored ${Math.round(res.score||0)}). Find them under Leads.`);
+  } catch(e) { showAlert(e.message, 'error'); }
+}
+
 // ─── Finance ──────────────────────────────────────────────────────────────────
 const SEGMENT_LABELS = { business:'🏢 Business', ai_tech:'🤖 AI / Tech', shared:'🔗 Shared' };
 
@@ -1226,6 +1304,7 @@ const pageRenderers = {
   social: () => loadPlatformStatus(),
   calling: () => { loadCampaigns(); if (!leads.length) renderLeads(); },
   leadgen: initLeadGen,
+  prospect: () => {},
   finance: loadFinance,
 };
 

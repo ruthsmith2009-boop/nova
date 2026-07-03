@@ -7,7 +7,9 @@ from datetime import datetime
 from database import get_db, ScheduledHunt
 from agents.lead_generator import (
     generate_leads, save_generated_leads, available_providers, ingest_inbound_lead,
+    _apply_score,
 )
+from agents.profile_research import research_profile
 from agents.scheduler import compute_next_run, run_one
 from config import settings
 
@@ -32,6 +34,67 @@ class SaveRequest(BaseModel):
 @router.get("/providers")
 def get_providers():
     return available_providers()
+
+
+# ── Prospect Research (paste-and-research — the safe LinkedIn alternative) ─────
+class ProfileResearchRequest(BaseModel):
+    profile_text: str
+    niche: Optional[str] = ""
+    offer: Optional[str] = ""      # what you sell, so outreach is accurate
+    enrich: bool = True            # pull extra public web context
+
+
+class ProfileSaveRequest(BaseModel):
+    lead_data: dict                # the lead_data block returned by /research-profile
+    parsed: Optional[dict] = None  # parsed profile, used to build the CRM note
+    outreach: Optional[dict] = None
+
+
+@router.post("/research-profile")
+async def research_profile_endpoint(req: ProfileResearchRequest):
+    """Paste a prospect's public profile text → NOVA parses, scores, and writes outreach.
+    No scraping: you view the profile, NOVA does the research and copywriting."""
+    return await research_profile(
+        req.profile_text, niche=req.niche or "", offer=req.offer or "", enrich=req.enrich
+    )
+
+
+@router.post("/research-profile/save")
+async def save_researched_profile(req: ProfileSaveRequest, db: Session = Depends(get_db)):
+    """Save a researched prospect into the CRM (scored), with the profile summary as a note."""
+    from database import Lead
+
+    data = dict(req.lead_data or {})
+    if not (data.get("phone") or data.get("email") or data.get("address")):
+        raise HTTPException(400, "Prospect needs a company, email, or phone before saving.")
+
+    # Duplicate check by email, then phone, then company/address
+    q = db.query(Lead)
+    existing = None
+    if data.get("email"):
+        existing = q.filter(Lead.email == data["email"]).first()
+    if not existing and data.get("phone"):
+        existing = q.filter(Lead.phone == data["phone"]).first()
+    if not existing and data.get("address"):
+        existing = q.filter(Lead.address == data["address"]).first()
+    if existing:
+        return {"status": "duplicate", "lead_id": existing.id}
+
+    parsed = req.parsed or {}
+    note_bits = [parsed.get("summary", "")]
+    if parsed.get("title") or parsed.get("company"):
+        note_bits.append(f"{parsed.get('title','')} at {parsed.get('company','')}".strip(" at"))
+    if parsed.get("linkedin_url"):
+        note_bits.append(f"LinkedIn: {parsed['linkedin_url']}")
+    data["notes"] = " | ".join(b for b in note_bits if b)
+    data["property_type"] = "Business Prospect"
+
+    lead = Lead(**{k: v for k, v in data.items() if hasattr(Lead, k)})
+    db.add(lead)
+    db.flush()
+    await _apply_score(lead, data)
+    db.commit()
+    return {"status": "created", "lead_id": lead.id, "score": lead.score}
 
 
 @router.post("/hunt")
