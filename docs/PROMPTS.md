@@ -32,6 +32,8 @@ toward real estate, the first two entries below are almost always the cause.
 | Video scripts | `backend/agents/social.py` | `generate_video_script()` | Full YouTube/TikTok scripts for any industry. |
 | Follow-up drafts | `backend/routers/leads.py` | `draft_followup` prompt | Drafts the next text/email/call opener from the owner to a lead. |
 | Lead extraction | `backend/agents/lead_generator.py` | `_extract_leads()` | Pulls REAL business prospects from web-search results; never fabricates contacts. |
+| Profile parse | `backend/agents/profile_research.py` | `parse_profile()` | Pulls clean structured fields out of a pasted LinkedIn/About/directory profile; never invents a field. |
+| Prospect outreach | `backend/agents/profile_research.py` | `write_outreach()` | Writes a LinkedIn connection note + DM + cold email in the owner's voice, leading with the prospect's problem. No em-dashes, no buzzwords. |
 
 ## Rules baked into the prompts
 - Every generative prompt says **"never assume real estate"** and adapts to the owner's actual industry.
