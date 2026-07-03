@@ -14,9 +14,11 @@ router = APIRouter(prefix="/scripts", tags=["scripts"])
 
 # Friendly labels for the built-in library keys.
 BUILTIN_META = {
-    "expired_brandon_mulrenin": ("Expired Listing", "Brandon Mulrenin"),
-    "fsbo_tom_ferry": ("FSBO Script", "Tom Ferry"),
-    "commission_objection": ("Commission Objection", "Mike Ferry"),
+    "reverse_selling": ("Reverse Selling — Permission Opener", "Brandon Mulrenin style"),
+    "missed_call_pain": ("Missed-Call Pain Opener", "NOVA"),
+    "cold_intro": ("Cold Intro — Permission-Based", "NOVA"),
+    "follow_up_pain": ("Follow-Up Gap Opener", "NOVA"),
+    "demo_close": ("Book-the-Demo Close", "NOVA"),
 }
 
 

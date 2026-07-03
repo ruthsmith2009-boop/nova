@@ -10,7 +10,7 @@ class Settings(BaseSettings):
     sendgrid_from_name: str = "Ruth Smith | AI With Ruth"
 
     # ── Google Workspace (one OAuth connects Gmail, Calendar, Drive, Contacts, Meet) ──
-    google_account_email: str = "airuthsmith@gmail.com"   # the Google account NOVA connects to
+    google_account_email: str = "aiwithruth@gmail.com"   # the Google account NOVA connects to
     google_oauth_client_id: Optional[str] = None
     google_oauth_client_secret: Optional[str] = None
     google_calendar_credentials_file: str = "credentials.json"
@@ -33,7 +33,7 @@ class Settings(BaseSettings):
     agent_license: str = ""
     broker_name: str = "AI With Ruth"
     agent_phone: str = "(408) 555-0100"
-    agent_email: str = "airuthsmith@gmail.com"
+    agent_email: str = "aiwithruth@gmail.com"
 
     primary_market: str = "San Jose & Santa Clara County, CA — Bay Area (serves all US markets)"
     openai_api_key: Optional[str] = None

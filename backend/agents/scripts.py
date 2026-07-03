@@ -6,6 +6,42 @@ and confident answers to every "I'm too busy / too expensive / already have some
 from agents.brain import think
 
 SCRIPT_LIBRARY = {
+    "reverse_selling": """
+REVERSE SELLING — PERMISSION-BASED OPENER (Brandon Mulrenin style, for AI automation):
+
+① OPENER — permission + disarming honesty (lower their guard):
+"Hi [Name], you don't know me, and I'll be honest — this is a cold call. Can I have
+27 seconds to tell you why I called, and then you can decide if it's worth continuing
+or you can hang up on me? Fair enough?"
+
+[Wait for the yes. The yes gives YOU permission and lowers their resistance.]
+
+② REASON — curiosity, NOT a pitch:
+"So the reason I called is I work with [type of business] owners who are quietly losing
+customers to missed calls and slow follow-up. Honestly, I don't even know if that's a
+problem for you — it might not be. Would you be opposed to me asking a couple quick
+questions to find out, and if it's not a fit, I'll get out of your hair?"
+
+③ DISCOVERY — reverse it, let THEM pull (ask, don't tell):
+- "When a call comes in and you're tied up on a job, what happens to it right now?"
+- "And the ones that go to voicemail — how many of those do you figure actually call back?"
+- "If a missed call never turned into a lost job again, what would that be worth to you?"
+
+[Talk 30%, listen 70%. The person asking the questions is the one in control.
+Do NOT jump in to pitch. Let the pain surface in their own words.]
+
+④ TAKE-AWAY CLOSE — make them chase it:
+"Look, I don't even know yet if what I do is right for you — and I'd rather tell you it's
+not than sell you something you don't need. Would you be opposed to a quick 10-minute look
+so we can both find out? If it's not for you, no hard feelings at all."
+
+GOLDEN RULES (Brandon's reverse-selling philosophy):
+- Never pitch. Ask questions and let them sell themselves.
+- Lead with the truth ("this is a cold call") — honesty disarms.
+- Use take-aways ("this might not be for you") — scarcity makes them lean in.
+- The goal of the call is the next step (the demo), not to close on the phone.
+""",
+
     "missed_call_pain": """
 MISSED-CALL PAIN OPENER (the #1 hook for local businesses):
 

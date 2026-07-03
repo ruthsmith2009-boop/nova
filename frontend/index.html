@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/static/css/style.css?v=nova2">
+  <link rel="stylesheet" href="/static/css/style.css?v=nova5">
 </head>
 <body>
 <div class="layout">
@@ -823,23 +823,22 @@
         <div class="grid-2">
           <div class="card">
             <div class="card-header"><span class="card-title">Objection Handler</span></div>
-            <p style="font-size:13px;color:var(--muted);margin-bottom:16px">Type any seller objection and get a data-backed response using Tom Ferry, Mike Ferry, Brian Buffini, and Brandon Mulrenin frameworks.</p>
-            <div class="form-group"><label>Seller said…</label>
-              <textarea id="script-objection" rows="3" placeholder="Your commission is too high..."></textarea>
+            <p style="font-size:13px;color:var(--muted);margin-bottom:16px">Type any objection a business owner throws at you and get a confident, non-pushy response — reframed around time and money saved, leading toward booking a demo.</p>
+            <div class="form-group"><label>They said…</label>
+              <textarea id="script-objection" rows="3" placeholder="I'm too busy to set this up right now..."></textarea>
             </div>
             <button class="btn btn-primary" onclick="submitObjFromPage()">Get Response</button>
             <div id="script-result" style="margin-top:16px"></div>
           </div>
           <div class="card">
             <div class="card-header"><span class="card-title">Quick Scripts</span></div>
-            <p style="font-size:13px;color:var(--muted);margin-bottom:12px">Click any script type to see the framework:</p>
+            <p style="font-size:13px;color:var(--muted);margin-bottom:12px">Click any script to see the full framework:</p>
             <div style="display:flex;flex-direction:column;gap:8px">
-              <button class="btn btn-ghost" onclick="loadScript('expired')">📋 Expired Listing (Brandon Mulrenin)</button>
-              <button class="btn btn-ghost" onclick="loadScript('fsbo')">🏠 FSBO Script (Tom Ferry)</button>
-              <button class="btn btn-ghost" onclick="loadScript('commission')">💰 Commission Objection (Mike Ferry)</button>
-              <button class="btn btn-ghost" onclick="loadScript('wait')">⏰ "I Want to Wait" Objection</button>
-              <button class="btn btn-ghost" onclick="loadScript('neighbor')">🏘 "Neighbor Sold for More"</button>
-              <button class="btn btn-ghost" onclick="loadScript('zillow')">📱 Zillow / Opendoor Objection</button>
+              <button class="btn btn-ghost" onclick="loadScript('reverse_selling')">🔄 Reverse Selling — Permission Opener (Brandon Mulrenin style)</button>
+              <button class="btn btn-ghost" onclick="loadScript('missed_call_pain')">📱 Missed-Call Pain Opener</button>
+              <button class="btn btn-ghost" onclick="loadScript('cold_intro')">☎️ Cold Intro — Permission-Based</button>
+              <button class="btn btn-ghost" onclick="loadScript('follow_up_pain')">✉️ Follow-Up Gap Opener</button>
+              <button class="btn btn-ghost" onclick="loadScript('demo_close')">🎯 Book-the-Demo Close</button>
             </div>
           </div>
         </div>
@@ -959,7 +958,7 @@
   </div><!-- /main -->
 </div><!-- /layout -->
 
-<script src="/static/js/app.js?v=nova4"></script>
+<script src="/static/js/app.js?v=nova5"></script>
 <script>
 // Extra page navigation entries
 const extraPages = ['automations','upload','listings','documents','marketing','scripts','team','integrations','forms','templates','coach','compliance'];
@@ -1637,20 +1636,16 @@ async function submitObjFromPage() {
     <div class="ai-output">${res.response}</div>`;
 }
 
-const scriptTexts = {
-  expired: 'I noticed your home came off the market. Are you still wanting to sell?',
-  fsbo: 'I saw your for-sale-by-owner sign. Quick question — are you cooperating with buyer\'s agents?',
-  commission: 'Your commission is too high, I can find someone cheaper.',
-  wait: 'I want to wait for the market to go up before I sell.',
-  neighbor: 'My neighbor sold for $200,000 more than what you\'re suggesting. I want that price.',
-  zillow: 'I\'m just going to list on Zillow or try Opendoor. Why do I need an agent?'
-};
-async function loadScript(type) {
-  document.getElementById('script-library-result').innerHTML = `<div class="loading-overlay"><div class="spinner"></div>Loading script…</div>`;
-  const res = await api('POST', '/leads/objection', { objection: scriptTexts[type] });
-  document.getElementById('script-library-result').innerHTML = `
-    <div class="card"><div class="card-header"><span class="card-title">${res.coach_framework}</span></div>
-    <div class="ai-output">${res.response}</div></div>`;
+async function loadScript(key) {
+  const box = document.getElementById('script-library-result');
+  box.innerHTML = `<div class="loading-overlay"><div class="spinner"></div>Loading script…</div>`;
+  try {
+    const data = await api('GET', '/scripts/');
+    const s = (data.builtin || []).find(x => x.id === 'builtin:' + key);
+    if (!s) { box.innerHTML = `<div class="alert alert-error">Script not found.</div>`; return; }
+    box.innerHTML = `<div class="alert alert-info"><strong>${s.title}</strong>${s.author ? ` — ${s.author}` : ''}</div>
+      <div class="ai-output">${(s.content || '').replace(/</g,'&lt;')}</div>`;
+  } catch(e) { box.innerHTML = `<div class="alert alert-error">${e.message}</div>`; }
 }
 
 async function scheduleAppointment(leadId) {
