@@ -1,0 +1,34 @@
+# Secrets — NEVER commit
+.env
+credentials.json
+token.json
+*.pem
+
+# Python
+venv/
+__pycache__/
+*.pyc
+*.pyo
+.Python
+*.egg-info/
+
+# Node (if ever added)
+node_modules/
+
+# Logs / temp
+*.log
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+
+# Uploaded / generated documents — may contain client PII, never commit
+data/
+data/documents/
+
+# OS / editor
+.DS_Store
+.vscode/
+.idea/
+*.swp

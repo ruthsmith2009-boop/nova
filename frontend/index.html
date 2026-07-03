@@ -1,0 +1,1725 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NOVA — AI Assistant for Small Business</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/css/style.css?v=nova2">
+</head>
+<body>
+<div class="layout">
+
+  <!-- Sidebar -->
+  <nav class="sidebar">
+    <div class="sidebar-logo">
+      <h1><span class="accent">NOVA</span></h1>
+      <div class="tagline">AI Assistant for Small Business</div>
+    </div>
+    <div class="sidebar-nav">
+      <div class="nav-section">Command Center</div>
+      <div class="nav-item active" data-page="dashboard" onclick="navigate('dashboard')">
+        <span class="icon">🏠</span><span>Dashboard</span>
+      </div>
+      <div class="nav-item" data-page="calllist" onclick="navigate('calllist')">
+        <span class="icon">📞</span><span>Daily Call List</span>
+      </div>
+      <div class="nav-item" data-page="coach" onclick="navigate('coach')">
+        <span class="icon">🎓</span><span>Coach Me</span>
+      </div>
+
+      <div class="nav-section">✨ AI Automations</div>
+      <div class="nav-item" data-page="automations" onclick="navigate('automations')">
+        <span class="icon">⚡</span><span>Live Demo</span>
+      </div>
+
+      <div class="nav-section">Leads & CRM</div>
+      <div class="nav-item" data-page="leads" onclick="navigate('leads')">
+        <span class="icon">👥</span><span>All Leads</span>
+      </div>
+      <div class="nav-item" data-page="upload" onclick="navigate('upload')">
+        <span class="icon">📤</span><span>Import Leads</span>
+      </div>
+      <div class="nav-item" data-page="leadgen" onclick="navigate('leadgen')">
+        <span class="icon">🎯</span><span>Lead Generator</span>
+      </div>
+      <div class="nav-item" data-page="calling" onclick="navigate('calling')">
+        <span class="icon">🤖</span><span>AI Calling</span>
+      </div>
+      <div class="nav-item" data-page="team" onclick="navigate('team')">
+        <span class="icon">👔</span><span>Team</span>
+      </div>
+
+      <div class="nav-section">Content & Outreach</div>
+      <div class="nav-item" data-page="social" onclick="navigate('social')">
+        <span class="icon">📱</span><span>Social Media</span>
+      </div>
+      <div class="nav-item" data-page="marketing" onclick="navigate('marketing')">
+        <span class="icon">✉</span><span>Email & Newsletter</span>
+      </div>
+      <div class="nav-item" data-page="scripts" onclick="navigate('scripts')">
+        <span class="icon">🎯</span><span>Scripts & Objections</span>
+      </div>
+      <div class="nav-item" data-page="templates" onclick="navigate('templates')">
+        <span class="icon">📧</span><span>Templates</span>
+      </div>
+
+      <div class="nav-section">Business</div>
+      <div class="nav-item" data-page="finance" onclick="navigate('finance')">
+        <span class="icon">💰</span><span>Finance & Costs</span>
+      </div>
+      <div class="nav-item" data-page="integrations" onclick="navigate('integrations')">
+        <span class="icon">🔌</span><span>Integrations</span>
+      </div>
+      <div class="nav-item" data-page="compliance" onclick="navigate('compliance')">
+        <span class="icon">⚖️</span><span>Compliance Check</span>
+      </div>
+    </div>
+    <div class="sidebar-footer">NOVA v1.0 — Ruth Smith</div>
+  </nav>
+
+  <!-- Main Content -->
+  <div class="main">
+    <div class="topbar">
+      <span class="page-title">Dashboard</span>
+      <div class="topbar-actions">
+        <div id="alert-area" style="margin-right:8px"></div>
+        <button class="btn btn-accent" onclick="addLead()">+ Add Lead</button>
+        <button class="btn btn-ghost" onclick="handleObjection()">🛡 Objection Help</button>
+      </div>
+    </div>
+
+    <div class="content">
+
+      <!-- DASHBOARD -->
+      <div id="page-dashboard" class="page active">
+        <div id="dash-alerts" style="margin-bottom:16px"></div>
+
+        <details class="panel" open>
+          <summary>
+            <span class="panel-head"><span class="panel-title">☀️ Today</span><span class="panel-sub">your day at a glance</span></span>
+            <span class="panel-chev">⌄</span>
+          </summary>
+          <div class="panel-body"><div id="dash-today"><div class="loading-overlay"><div class="spinner"></div>Loading…</div></div></div>
+        </details>
+
+        <details class="panel">
+          <summary>
+            <span class="panel-head"><span class="panel-title">📈 Daily KPIs</span><span class="panel-sub">activity vs. goals</span></span>
+            <span class="panel-chev">⌄</span>
+          </summary>
+          <div class="panel-body"><div id="dash-kpis"></div></div>
+        </details>
+
+        <details class="panel">
+          <summary>
+            <span class="panel-head"><span class="panel-title">📊 Snapshot</span><span class="panel-sub">leads &amp; pipeline</span></span>
+            <span class="panel-chev">⌄</span>
+          </summary>
+          <div class="panel-body">
+            <div id="dash-stats" class="stats-grid">
+              <div class="loading-overlay"><div class="spinner"></div>Loading…</div>
+            </div>
+          </div>
+        </details>
+
+        <details class="panel">
+          <summary>
+            <span class="panel-head"><span class="panel-title">🪜 Pipeline</span><span class="panel-sub">deals by stage</span></span>
+            <span class="panel-chev">⌄</span>
+          </summary>
+          <div class="panel-body"><div id="dash-pipeline" class="pipeline"></div></div>
+        </details>
+
+        <details class="panel">
+          <summary>
+            <span class="panel-head"><span class="panel-title">⚡ Quick Actions</span><span class="panel-sub">reach out in one click</span></span>
+            <span class="panel-chev">⌄</span>
+          </summary>
+          <div class="panel-body">
+            <div class="grid-2">
+              <div class="card">
+                <div class="card-header">
+                  <span class="card-title">🤖 Launch AI Call Campaign</span>
+                </div>
+                <p style="font-size:14px;color:var(--muted);margin-bottom:14px">NOVA calls your leads, qualifies them, and books the appointment — while you work.</p>
+                <button class="btn btn-primary" onclick="navigate('calling')">Start Calling →</button>
+              </div>
+              <div class="card">
+                <div class="card-header"><span class="card-title">✉ Draft a Follow-Up</span></div>
+                <p style="font-size:14px;color:var(--muted);margin-bottom:14px">Pick a lead and NOVA writes the perfect follow-up message, ready to send.</p>
+                <button class="btn btn-primary" onclick="navigate('templates')">Write It →</button>
+              </div>
+            </div>
+          </div>
+        </details>
+      </div>
+
+      <!-- AI AUTOMATIONS — LIVE DEMO -->
+      <div id="page-automations" class="page">
+        <div class="card" style="margin-bottom:18px;text-align:center">
+          <div style="font-family:var(--serif);font-size:30px;font-weight:700;background:var(--gold-gradient);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent">See what NOVA does for your business</div>
+          <p style="font-size:15px;color:var(--muted);margin-top:8px">Three ways NOVA turns missed calls and slow follow-up into booked jobs. Tap “Play” on any one.</p>
+        </div>
+        <div class="grid-3" id="auto-cards" style="gap:16px;margin-bottom:18px">
+          <div class="card" style="cursor:pointer" onclick="playAuto('missedcall')">
+            <div style="font-size:38px">📱</div>
+            <div class="card-title" style="font-size:19px;margin-top:6px">Missed-Call Text-Back</div>
+            <p style="font-size:13.5px;color:var(--muted);margin-top:6px">You can’t pick up. NOVA instantly texts the caller, answers, and books the job — so they never call a competitor.</p>
+            <button class="btn btn-primary btn-sm" style="margin-top:10px">▶ Play demo</button>
+          </div>
+          <div class="card" style="cursor:pointer" onclick="playAuto('answer')">
+            <div style="font-size:38px">🤖</div>
+            <div class="card-title" style="font-size:19px;margin-top:6px">AI Phone Answering</div>
+            <p style="font-size:13.5px;color:var(--muted);margin-top:6px">NOVA answers the phone like a friendly receptionist, qualifies the caller, and books them straight onto your calendar.</p>
+            <button class="btn btn-primary btn-sm" style="margin-top:10px">▶ Play demo</button>
+          </div>
+          <div class="card" style="cursor:pointer" onclick="playAuto('followup')">
+            <div style="font-size:38px">✉️</div>
+            <div class="card-title" style="font-size:19px;margin-top:6px">Auto Follow-Up</div>
+            <p style="font-size:13.5px;color:var(--muted);margin-top:6px">A lead comes in and NOVA follows up by text and email — Day 0, Day 1, Day 3 — until they book. No lead slips away.</p>
+            <button class="btn btn-primary btn-sm" style="margin-top:10px">▶ Play demo</button>
+          </div>
+        </div>
+        <div class="card" id="auto-stage" style="min-height:340px">
+          <div id="auto-stage-body" style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:300px;color:var(--muted)">
+            <div style="font-size:52px;opacity:0.5">⚡</div>
+            <p style="margin-top:10px">Pick a demo above and press <strong style="color:var(--gold-bright)">▶ Play</strong> to watch it happen live.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- LEADS -->
+      <div id="page-leads" class="page">
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">All Leads</span>
+            <div style="display:flex;gap:8px;flex-wrap:wrap">
+              <input id="lead-search" oninput="filterLeads()" placeholder="🔍 Search name, address, city…" style="width:auto;padding:6px 10px;font-size:13px;min-width:200px">
+              <select id="temp-filter" onchange="filterLeads()" style="width:auto;padding:6px 10px;font-size:13px">
+                <option value="">All Temps</option>
+                <option value="hot">🔥 Hot</option>
+                <option value="warm">☀ Warm</option>
+                <option value="cold">❄ Cold</option>
+                <option value="not_ready">⏳ Not Ready</option>
+              </select>
+              <select id="stage-filter" onchange="filterLeads()" style="width:auto;padding:6px 10px;font-size:13px">
+                <option value="">All Stages</option>
+                <option value="new">New</option>
+                <option value="contacted">Contacted</option>
+                <option value="appointment_set">Appointment Set</option>
+                <option value="listing_active">Active Listing</option>
+                <option value="under_contract">Under Contract</option>
+                <option value="closed">Closed</option>
+              </select>
+              <button class="btn btn-ghost" onclick="saveSmartList()">💾 Save View</button>
+              <button class="btn btn-ghost" onclick="exportLeadsCSV()">⬇ Export CSV</button>
+              <button class="btn btn-ghost" onclick="showDeleted()">🗑 Recently Deleted</button>
+              <button class="btn btn-ghost" onclick="seedDemo()" title="Add sample leads to showcase NOVA">✨ Load Demo</button>
+              <button class="btn btn-ghost" onclick="clearDemo()" title="Remove sample demo leads">Clear Demo</button>
+              <button class="btn btn-accent" onclick="addLead()">+ Add Lead</button>
+            </div>
+          </div>
+          <div id="smart-lists" style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px"></div>
+          <div id="bulk-bar" style="display:none;align-items:center;gap:8px;flex-wrap:wrap;background:rgba(212,168,87,0.08);border:1px solid var(--accent,#c5a572);border-radius:8px;padding:8px 12px;margin-bottom:12px"></div>
+          <div id="leads-table"></div>
+        </div>
+      </div>
+
+      <!-- CALL LIST -->
+      <div id="page-calllist" class="page">
+        <div class="card" style="margin-bottom:16px">
+          <div class="card-header">
+            <span class="card-title">📞 Daily Call List</span>
+            <span id="call-list-date" style="font-size:13px;color:var(--muted)"></span>
+          </div>
+          <p style="font-size:13px;color:var(--muted);margin-bottom:16px">AI-ranked by sell probability. Highest motivation leads first.</p>
+          <button class="btn btn-primary" onclick="renderCallList()">🔄 Refresh List</button>
+        </div>
+        <div id="call-list-container"></div>
+      </div>
+
+      <!-- UPLOAD -->
+      <div id="page-upload" class="page">
+        <div class="card">
+          <div class="card-header"><span class="card-title">Import Leads from CSV / Excel</span></div>
+          <p style="font-size:14px;color:var(--muted);margin-bottom:20px">
+            Upload any CSV or Excel file with lead data. NOVA will automatically map columns,
+            score every lead by sell probability, and rank them for your call list.
+          </p>
+          <div class="alert alert-info" style="margin-bottom:20px">
+            <strong>Accepted columns (flexible naming):</strong> first_name, last_name, email, phone, address,
+            city, zip, years_owned, absentee, expired, days_on_market, life_event, source
+          </div>
+          <div class="upload-zone" onclick="document.getElementById('lead-file').click()"
+               ondragover="event.preventDefault();this.classList.add('drag-over')"
+               ondragleave="this.classList.remove('drag-over')"
+               ondrop="event.preventDefault();this.classList.remove('drag-over');document.getElementById('lead-file').files=event.dataTransfer.files">
+            <div class="upload-icon">📁</div>
+            <p><strong>Click to select or drag & drop</strong></p>
+            <p>CSV or Excel (.xlsx) files</p>
+          </div>
+          <input type="file" id="lead-file" accept=".csv,.xlsx,.xls" style="display:none" onchange="document.getElementById('upload-filename').textContent=this.files[0]?.name||''">
+          <div id="upload-filename" style="margin-top:10px;font-size:13px;color:var(--muted)"></div>
+          <button class="btn btn-primary" style="margin-top:12px;width:100%" onclick="uploadLeads()">Import & Score Leads</button>
+          <div id="upload-result" style="margin-top:12px"></div>
+        </div>
+      </div>
+
+      <!-- FINANCE -->
+      <div id="page-finance" class="page">
+        <div id="finance-stats" class="stats-grid"><div class="loading-overlay"><div class="spinner"></div></div></div>
+        <div class="grid-2" style="margin-bottom:20px">
+          <div class="card">
+            <div class="card-header"><span class="card-title">➕ Log an Expense</span></div>
+            <div id="exp-alert"></div>
+            <div class="grid-2">
+              <div class="form-group"><label>Amount ($)</label><input id="exp-amount" type="number" step="0.01" placeholder="49.00"></div>
+              <div class="form-group"><label>Vendor</label><input id="exp-vendor" placeholder="Anthropic, MLS, etc."></div>
+            </div>
+            <div class="form-group"><label>Description</label><input id="exp-desc" placeholder="What was it for?"></div>
+            <div class="grid-2">
+              <div class="form-group"><label>Business</label>
+                <select id="exp-segment">
+                  <option value="real_estate">🏡 Real Estate</option>
+                  <option value="ai_tech">🤖 AI / Tech</option>
+                  <option value="shared">🔗 Shared</option>
+                </select>
+              </div>
+              <div class="form-group"><label>Recurrence</label>
+                <select id="exp-recurrence">
+                  <option value="one_time">One-time</option>
+                  <option value="monthly">Monthly</option>
+                  <option value="yearly">Yearly</option>
+                </select>
+              </div>
+            </div>
+            <div class="form-group"><label>Category (leave blank — AI will pick)</label><input id="exp-category" placeholder="Auto-categorized if blank"></div>
+            <label style="display:flex;align-items:center;gap:8px;text-transform:none;font-weight:400;font-size:13px"><input type="checkbox" id="exp-deductible" checked style="width:auto"> Tax-deductible</label>
+            <button class="btn btn-accent" style="width:100%;margin-top:12px" onclick="addExpense()">Add Expense</button>
+            <button class="btn btn-ghost" style="width:100%;margin-top:8px" onclick="seedAriaStack()">⚡ Quick-add NOVA tool costs</button>
+          </div>
+          <div class="card">
+            <div class="card-header"><span class="card-title">📊 Spend Breakdown</span><button class="btn btn-ghost btn-sm" onclick="loadFinanceReport()">🧠 AI Report</button></div>
+            <div id="finance-breakdown"></div>
+          </div>
+        </div>
+        <div id="finance-report"></div>
+        <div class="card">
+          <div class="card-header"><span class="card-title">All Expenses</span>
+            <select id="exp-filter" onchange="loadFinance()" style="width:auto;padding:6px 10px;font-size:13px">
+              <option value="">All Business</option>
+              <option value="real_estate">🏡 Real Estate</option>
+              <option value="ai_tech">🤖 AI / Tech</option>
+              <option value="shared">🔗 Shared</option>
+            </select>
+          </div>
+          <div id="finance-table"></div>
+        </div>
+      </div>
+
+      <!-- LEAD GENERATOR -->
+      <div id="page-leadgen" class="page">
+        <div class="card" style="margin-bottom:20px">
+          <div class="card-header"><span class="card-title">🎯 Lead Generator</span></div>
+          <p style="font-size:13px;color:var(--muted);margin-bottom:16px">NOVA scans public sources for real leads, scores them, and drops them into your CRM. It never invents fake names or numbers — missing contact info is flagged "needs skip trace."</p>
+          <div class="grid-3">
+            <div class="form-group">
+              <label>What to find</label>
+              <select id="lg-type">
+                <option value="seller_leads">🏡 Seller / Listing Leads</option>
+                <option value="fsbo">🏷️ FSBO (Zillow / Redfin)</option>
+                <option value="expired_fsbo">🔥 Expired &amp; FSBO</option>
+                <option value="distressed">⚠️ Distressed / Motivated (Batchleads)</option>
+                <option value="ai_service_clients">💼 AI-Service Clients (SaaS)</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>City / Area</label>
+              <input id="lg-city" list="lg-city-list" placeholder="Any US city — e.g. Austin, Miami, San Jose" value="San Jose">
+              <datalist id="lg-city-list">
+                <option>Los Gatos</option><option>Saratoga</option><option>Cupertino</option>
+                <option>Willow Glen</option><option>Sunnyvale</option><option>Campbell</option>
+                <option>San Jose</option><option>Bay Area</option>
+              </datalist>
+            </div>
+            <div class="form-group">
+              <label>State (optional)</label>
+              <input id="lg-state" placeholder="e.g. CA, TX, FL" maxlength="2" style="text-transform:uppercase">
+            </div>
+          </div>
+          <div class="grid-3">
+            <div class="form-group">
+              <label>Data Source</label>
+              <select id="lg-provider">
+                <option value="tavily">Free Web Scan (Tavily)</option>
+                <option value="redx">REDX (paid)</option>
+                <option value="batchleads">BatchLeads (paid)</option>
+                <option value="propstream">PropStream (paid)</option>
+              </select>
+            </div>
+            <div class="form-group" id="lg-niche-wrap" style="display:none">
+              <label>Niche (for AI-service clients)</label>
+              <input id="lg-niche" placeholder="e.g. mortgage brokers, med spas, insurance agents">
+            </div>
+            <div class="form-group" style="display:flex;align-items:flex-end">
+              <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-weight:600">
+                <input type="checkbox" id="lg-autosave" style="width:auto"> ⚡ Auto-add found leads to CRM
+              </label>
+            </div>
+          </div>
+          <div id="lg-alert"></div>
+          <button class="btn btn-accent" onclick="runHunt()">🔍 Find Leads</button>
+        </div>
+        <div id="lg-results"></div>
+
+        <div class="card" style="margin-top:20px">
+          <div class="card-header">
+            <span class="card-title">⏰ Scheduled Auto-Hunts</span>
+            <button class="btn btn-accent" onclick="createSchedule()">＋ Schedule This Hunt</button>
+          </div>
+          <p style="font-size:13px;color:var(--muted);margin-bottom:16px">Set a hunt to run on its own — daily, weekly, or hourly. NOVA scans, scores, and adds new leads to your CRM automatically (duplicates skipped). Uses the <strong>What to find / City / State / Data Source</strong> selected above. Distressed hunts pair with your Batchleads lists.</p>
+          <div class="form-group" style="max-width:220px">
+            <label>Run every</label>
+            <select id="lg-frequency">
+              <option value="daily">Daily</option>
+              <option value="weekly">Weekly</option>
+              <option value="hourly">Hourly</option>
+            </select>
+          </div>
+          <div id="lg-schedules"></div>
+        </div>
+      </div>
+
+      <!-- AI CALLING -->
+      <div id="page-calling" class="page">
+        <div class="tabs" id="calling-tabs">
+          <div class="tab active" onclick="switchCallingTab('campaigns')">📞 Campaigns</div>
+          <div class="tab" onclick="switchCallingTab('new')">➕ New Campaign</div>
+          <div class="tab" onclick="switchCallingTab('inbox')">📥 Call Results</div>
+          <div class="tab" onclick="switchCallingTab('setup')">⚙ Setup</div>
+        </div>
+
+        <!-- CAMPAIGNS -->
+        <div id="calling-campaigns">
+          <div id="calling-status-banner"></div>
+          <div class="card">
+            <div class="card-header">
+              <span class="card-title">Calling Campaigns</span>
+              <button class="btn btn-ghost btn-sm" onclick="loadCampaigns()">🔄 Refresh</button>
+            </div>
+            <div id="campaigns-list"><div class="loading-overlay"><div class="spinner"></div></div></div>
+          </div>
+        </div>
+
+        <!-- NEW CAMPAIGN -->
+        <div id="calling-new" style="display:none">
+          <div class="card">
+            <div class="card-header"><span class="card-title">Create AI Calling Campaign</span></div>
+            <p style="font-size:13px;color:var(--muted);margin-bottom:16px">Describe your goal — NOVA writes the AI calling script, places the calls, and logs every result back to your CRM.</p>
+            <div id="campaign-alert"></div>
+            <div class="form-group"><label>Campaign Name</label><input id="camp-name" placeholder="Expired Listings — Willow Glen"></div>
+            <div class="form-group"><label>Goal of the Calls</label><input id="camp-goal" placeholder="Qualify the seller and book a listing appointment"></div>
+            <div class="form-group"><label>Offer / Service to Introduce</label><input id="camp-offer" placeholder="A free home valuation and listing consultation"></div>
+            <div class="form-group"><label>Qualifying Questions (one per line)</label><textarea id="camp-questions" rows="4" placeholder="Are you thinking of selling in the next 6 months?&#10;Have you had your home valued recently?&#10;What's prompting the move?"></textarea></div>
+            <div class="grid-3">
+              <div class="form-group"><label>Call Window Start</label><input id="camp-start" type="time" value="09:00"></div>
+              <div class="form-group"><label>Call Window End</label><input id="camp-end" type="time" value="18:00"></div>
+              <div class="form-group"><label>Max Attempts</label><input id="camp-attempts" type="number" value="3"></div>
+            </div>
+            <div class="form-group"><label>Notify Email (when a lead is hot)</label><input id="camp-notify" type="email" placeholder="ruthsmith2009@gmail.com"></div>
+            <div class="alert alert-info" style="margin-bottom:16px">📋 Enrolled leads come from your current lead list. NOVA skips duplicate numbers automatically and respects your call window.</div>
+            <button class="btn btn-accent" onclick="createCampaign()">✨ Generate Script & Create Campaign</button>
+            <div id="campaign-script-preview" style="margin-top:16px"></div>
+          </div>
+        </div>
+
+        <!-- INBOX / RESULTS -->
+        <div id="calling-inbox" style="display:none">
+          <div class="card">
+            <div class="card-header">
+              <span class="card-title">Call Results</span>
+              <div style="display:flex;gap:8px">
+                <select id="disposition-filter" onchange="loadCallRecords()" style="width:auto;padding:6px 10px;font-size:13px">
+                  <option value="">All Outcomes</option>
+                  <option value="interested">Interested 🔥</option>
+                  <option value="appointment_callback_needed">Appointment / Callback</option>
+                  <option value="custom_plan_requested">Custom Plan Requested</option>
+                  <option value="management_contact_required">Decision Maker Needed</option>
+                  <option value="follow_up_required">Follow-up Required</option>
+                  <option value="not_interested">Not Interested</option>
+                  <option value="no_answer">No Answer</option>
+                  <option value="voicemail">Voicemail</option>
+                </select>
+                <button class="btn btn-ghost btn-sm" onclick="loadCallRecords()">🔄</button>
+              </div>
+            </div>
+            <div id="call-records-list"></div>
+          </div>
+        </div>
+
+        <!-- SETUP -->
+        <div id="calling-setup" style="display:none">
+          <div class="grid-2">
+            <div class="card">
+              <div class="card-header"><span class="card-title">🎙 Vapi AI (Voice Brain)</span></div>
+              <div id="vapi-status-badge" style="margin-bottom:12px"></div>
+              <div class="alert alert-info" style="margin-bottom:12px">
+                <strong>How to connect:</strong><br>
+                1. Sign up at <strong>vapi.ai</strong><br>
+                2. Dashboard → API Keys → copy your key<br>
+                3. Buy/import a phone number → copy its ID<br>
+                4. Paste both into <strong>~/aria-re/.env</strong>:<br>
+                <code style="font-size:11px">VAPI_API_KEY=...<br>VAPI_PHONE_NUMBER_ID=...</code><br>
+                5. Restart the backend
+              </div>
+              <p style="font-size:13px;color:var(--muted)">Vapi runs the live AI conversation using Claude. It handles speaking, listening, objections, and asking for the decision maker.</p>
+            </div>
+            <div class="card">
+              <div class="card-header"><span class="card-title">☎ Twilio (Phone Line)</span></div>
+              <div id="twilio-status-badge" style="margin-bottom:12px"></div>
+              <div class="alert alert-info" style="margin-bottom:12px">
+                <strong>How to connect:</strong><br>
+                1. Sign up at <strong>twilio.com</strong>, add credit<br>
+                2. Buy a local number (408 area code)<br>
+                3. Console → copy Account SID + Auth Token<br>
+                4. Register A2P 10DLC (avoids spam flags)<br>
+                5. Paste into <strong>~/aria-re/.env</strong> and restart
+              </div>
+              <p style="font-size:13px;color:var(--muted)">You can connect Twilio directly to Vapi inside the Vapi dashboard — that's the simplest path. NOVA works either way.</p>
+            </div>
+          </div>
+          <div class="card" style="margin-top:16px">
+            <div class="card-header"><span class="card-title">🔗 Webhook (for call results)</span></div>
+            <p style="font-size:13px;color:var(--muted);margin-bottom:8px">For NOVA to receive call results automatically, Vapi needs a public URL. For local testing, run <code>ngrok http 8000</code> and set <code>PUBLIC_BASE_URL</code> in .env to the ngrok URL.</p>
+            <div id="webhook-url-display"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- LISTINGS -->
+      <div id="page-listings" class="page">
+        <div class="card" style="margin-bottom:20px">
+          <div class="card-header"><span class="card-title">My Listings</span><button class="btn btn-accent" onclick="showAddListing()">+ New Listing</button></div>
+          <div id="listings-table"><div class="loading-overlay"><div class="spinner"></div></div></div>
+        </div>
+      </div>
+
+      <!-- DOCUMENTS -->
+      <div id="page-documents" class="page">
+        <div class="card" style="margin-bottom:20px">
+          <div class="card-header"><span class="card-title">Generate California Documents</span></div>
+          <div class="alert alert-warning" style="margin-bottom:20px">
+            NOVA auto-fills documents using AI and property data. All documents require review
+            and signature by licensed parties. RLA must use official C.A.R. forms.
+          </div>
+          <div id="doc-alert"></div>
+          <div class="grid-2">
+            <div class="form-group"><label>Property Address *</label><input id="doc-address" placeholder="123 Oak Street"></div>
+            <div class="form-group"><label>City</label><input id="doc-city" placeholder="Los Gatos"></div>
+          </div>
+          <div class="grid-2">
+            <div class="form-group"><label>List Price *</label><input id="doc-price" type="number" placeholder="1495000"></div>
+            <div class="form-group"><label>Seller Full Name</label><input id="doc-seller" placeholder="Jane & John Smith"></div>
+          </div>
+          <div class="grid-2">
+            <div class="form-group"><label>Bedrooms</label><input id="doc-beds" type="number" placeholder="3" value="3"></div>
+            <div class="form-group"><label>Bathrooms</label><input id="doc-baths" type="number" step="0.5" placeholder="2" value="2"></div>
+          </div>
+          <div class="alert alert-info" style="margin-bottom:16px">
+            <strong>Documents generated:</strong> RLA (Listing Agreement), TDS (Transfer Disclosure Statement),
+            Estimated Net Sheet. SPQ, AVID, NHD, Lead Paint flagged for completion.
+          </div>
+          <button class="btn btn-primary" onclick="generateDocuments()">Generate Document Package</button>
+          <div id="doc-result" style="margin-top:20px"></div>
+        </div>
+
+        <div class="card" style="margin-bottom:20px">
+          <div class="card-header"><span class="card-title">🗄️ Document Vault — 3-Year Compliance</span></div>
+          <p style="font-size:13px;color:var(--muted);margin-bottom:16px">Store signed contracts, disclosures, and transaction records. Each upload is kept for <strong>3 years</strong> (California broker record-retention requirement) and protected from accidental deletion during that window. Files are stored privately — never on GitHub.</p>
+          <div class="grid-3">
+            <div class="form-group"><label>File</label><input type="file" id="dv-file"></div>
+            <div class="form-group"><label>Type</label>
+              <select id="dv-category">
+                <option>Contract</option><option>RLA (Listing Agreement)</option><option>TDS (Disclosure)</option>
+                <option>Disclosure</option><option>Inspection</option><option>ID / License</option><option>Other</option>
+              </select>
+            </div>
+            <div class="form-group" style="display:flex;align-items:flex-end"><button class="btn btn-accent" onclick="uploadDocument()" style="width:100%">⬆ Upload to Vault</button></div>
+          </div>
+          <div class="form-group"><label>Notes (optional)</label><input id="dv-notes" placeholder="e.g. 123 Oak St — signed listing agreement"></div>
+          <div id="dv-alert"></div>
+          <div style="display:flex;align-items:center;gap:10px;margin:14px 0 4px">
+            <label style="margin:0">Filter by type</label>
+            <select id="dv-filter" onchange="loadDocuments()" style="width:auto;padding:6px 10px">
+              <option value="">All documents</option>
+              <option>Contract</option><option>RLA (Listing Agreement)</option><option>TDS (Disclosure)</option>
+              <option>Disclosure</option><option>Inspection</option><option>ID / License</option><option>Other</option>
+            </select>
+            <span id="dv-count" style="font-size:12px;color:var(--muted)"></span>
+          </div>
+          <div id="documents-list" style="margin-top:8px"></div>
+
+          <div style="margin-top:22px;border-top:1px solid var(--border);padding-top:16px">
+            <div style="font-weight:700;font-size:15px;margin-bottom:6px">🔗 Connect External Storage (optional)</div>
+            <p style="font-size:13px;color:var(--muted);margin-bottom:12px">Keep an off-site copy in the tools brokers already use. Connecting these needs your account — we'll set it up together when you're ready.</p>
+            <div id="doc-integrations"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TRANSACTION FORMS -->
+      <div id="page-forms" class="page">
+        <div class="card" style="margin-bottom:20px">
+          <div class="card-header"><span class="card-title">📝 Transaction Forms</span></div>
+          <p style="font-size:13px;color:var(--muted);margin-bottom:16px">Pick a lead and NOVA fills their contact + property details into every standard agent form, so you don't re-type. Copy each into your official C.A.R. form in zipForms/DocuSign.</p>
+          <div class="grid-3">
+            <div class="form-group"><label>Lead</label><select id="fp-lead"></select></div>
+            <div class="form-group"><label>Buyer name (for RPA, optional)</label><input id="fp-buyer" placeholder="Buyer full name"></div>
+            <div class="form-group" style="display:flex;align-items:flex-end"><button class="btn btn-accent" onclick="prepareForms()" style="width:100%">📝 Prepare Forms</button></div>
+          </div>
+          <div id="fp-result"></div>
+        </div>
+      </div>
+
+      <!-- MARKET RESEARCH -->
+      <div id="page-market" class="page">
+        <div class="grid-2" style="margin-bottom:20px">
+          <div class="card">
+            <div class="card-header"><span class="card-title">Market Snapshot</span></div>
+            <div class="form-group">
+              <label>City / Neighborhood / Area (anywhere in the US)</label>
+              <input id="market-area" list="area-suggestions" placeholder="e.g. San Jose, Austin TX, Scottsdale AZ…" value="San Jose">
+              <datalist id="area-suggestions">
+                <option>San Jose</option><option>Willow Glen</option><option>Los Gatos</option>
+                <option>Saratoga</option><option>Cupertino</option><option>Sunnyvale</option>
+                <option>Campbell</option><option>Almaden Valley</option><option>Evergreen</option>
+              </datalist>
+            </div>
+            <button class="btn btn-primary" onclick="runMarketSnapshot()">Pull Live Data</button>
+          </div>
+          <div class="card">
+            <div class="card-header"><span class="card-title">Run a CMA</span></div>
+            <div id="cma-alert"></div>
+            <div class="form-group"><label>Property Address *</label><input id="cma-address" placeholder="456 Elm Ave"></div>
+            <div class="grid-2">
+              <div class="form-group"><label>City</label><input id="cma-city" placeholder="San Jose"></div>
+              <div class="form-group"><label>State</label><input id="cma-state" placeholder="CA" maxlength="2"></div>
+            </div>
+            <div class="grid-3">
+              <div class="form-group"><label>Beds</label><input id="cma-beds" type="number" placeholder="3"></div>
+              <div class="form-group"><label>Baths</label><input id="cma-baths" type="number" step="0.5" placeholder="2"></div>
+              <div class="form-group"><label>Sqft</label><input id="cma-sqft" type="number" placeholder="1600"></div>
+            </div>
+            <button class="btn btn-primary" onclick="runCMA()">Run CMA</button>
+          </div>
+        </div>
+        <div id="market-result"></div>
+        <div id="cma-result"></div>
+      </div>
+
+      <!-- SOCIAL MEDIA -->
+      <div id="page-social" class="page">
+        <div class="tabs" id="social-tabs">
+          <div class="tab active" onclick="switchSocialTab('create')">✍ Create Posts</div>
+          <div class="tab" onclick="switchSocialTab('queue')">📋 Approval Queue</div>
+          <div class="tab" onclick="switchSocialTab('video')">🎬 Video Scripts</div>
+          <div class="tab" onclick="switchSocialTab('connect')">🔗 Connect Accounts</div>
+        </div>
+
+        <!-- CREATE -->
+        <div id="social-create">
+          <div class="grid-2" style="margin-bottom:20px">
+            <div class="card">
+              <div class="card-header"><span class="card-title">Generate Post Suite</span></div>
+              <p style="font-size:13px;color:var(--muted);margin-bottom:16px">Write once — NOVA creates posts for every platform instantly.</p>
+              <div class="form-group">
+                <label>Content Type</label>
+                <select id="soc-type">
+                  <option value="listing">🏡 New Listing</option>
+                  <option value="just_sold">🎉 Just Sold</option>
+                  <option value="open_house">🚪 Open House</option>
+                  <option value="market_update">📊 Market Update</option>
+                  <option value="tip">💡 Real Estate Tip</option>
+                  <option value="neighborhood">🏘 Neighborhood Spotlight</option>
+                  <option value="testimonial">⭐ Client Testimonial</option>
+                  <option value="custom">✏ Custom</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>Subject / Key Details</label>
+                <textarea id="soc-subject" rows="3" placeholder="e.g. Just listed — 3bd/2ba in Los Gatos at $1.495M. Stunning kitchen remodel, top-rated schools, sold in 6 days last comp."></textarea>
+              </div>
+              <div class="form-group">
+                <label>Image URL (optional — for Instagram)</label>
+                <input id="soc-image" type="url" placeholder="https://... (Dropbox, Google Drive, or MLS photo link)">
+              </div>
+              <div id="soc-generate-alert"></div>
+              <button class="btn btn-accent" style="width:100%" onclick="generateSocialPosts()">✨ Generate All Platform Posts</button>
+            </div>
+            <div class="card">
+              <div class="card-header"><span class="card-title">Platform Status</span></div>
+              <div id="platform-status-list">
+                <div class="loading-overlay"><div class="spinner"></div></div>
+              </div>
+            </div>
+          </div>
+          <div id="social-generated-result"></div>
+        </div>
+
+        <!-- QUEUE -->
+        <div id="social-queue" style="display:none">
+          <div class="card">
+            <div class="card-header">
+              <span class="card-title">Posts Awaiting Your Approval</span>
+              <button class="btn btn-ghost btn-sm" onclick="loadSocialQueue()">🔄 Refresh</button>
+            </div>
+            <div id="social-queue-list"></div>
+          </div>
+        </div>
+
+        <!-- VIDEO SCRIPTS -->
+        <div id="social-video" style="display:none">
+          <div class="card" style="margin-bottom:20px">
+            <div class="card-header"><span class="card-title">Video Script Generator</span></div>
+            <p style="font-size:13px;color:var(--muted);margin-bottom:16px">NOVA writes complete word-for-word scripts for YouTube and TikTok. You film it, NOVA writes everything else.</p>
+            <div class="grid-2">
+              <div class="form-group">
+                <label>Platform</label>
+                <select id="vid-platform">
+                  <option value="youtube">YouTube</option>
+                  <option value="tiktok">TikTok</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>Video Type</label>
+                <select id="vid-type">
+                  <option value="market_update">Market Update</option>
+                  <option value="listing_tour">Listing Tour</option>
+                  <option value="neighborhood_guide">Neighborhood Guide</option>
+                  <option value="tips">Real Estate Tips</option>
+                  <option value="q_and_a">Q&amp;A / FAQ</option>
+                </select>
+              </div>
+            </div>
+            <div class="form-group">
+              <label>Topic</label>
+              <input id="vid-topic" placeholder="e.g. Why Los Gatos homes are selling in under 7 days right now">
+            </div>
+            <div class="form-group">
+              <label>Duration (minutes)</label>
+              <select id="vid-duration">
+                <option value="1">~1 min (TikTok/Reel)</option>
+                <option value="3" selected>~3 min (YouTube short)</option>
+                <option value="5">~5 min (YouTube standard)</option>
+                <option value="10">~10 min (YouTube deep dive)</option>
+              </select>
+            </div>
+            <button class="btn btn-primary" onclick="generateVideoScript()">Write Script</button>
+          </div>
+          <div id="video-script-result"></div>
+        </div>
+
+        <!-- CONNECT ACCOUNTS -->
+        <div id="social-connect" style="display:none">
+          <div class="grid-2">
+            <div class="card">
+              <div class="card-header"><span class="card-title">📘 Facebook & Instagram</span></div>
+              <p style="font-size:13px;color:var(--muted);margin-bottom:12px">One Meta token connects both. Requires a Facebook Business Page + Instagram Business Account.</p>
+              <div class="alert alert-info" style="margin-bottom:12px">
+                <strong>How to get your token:</strong><br>
+                1. Go to <strong>developers.facebook.com</strong><br>
+                2. Create an App → Add "Pages" product<br>
+                3. Graph API Explorer → generate Page Access Token<br>
+                4. Paste below and save to your .env file
+              </div>
+              <div class="form-group"><label>Page Access Token</label><input id="fb-token" type="password" placeholder="EAAxxxxxxx..."></div>
+              <div class="form-group"><label>Facebook Page ID</label><input id="fb-page-id" placeholder="123456789"></div>
+              <div class="form-group"><label>Instagram Business Account ID</label><input id="ig-account-id" placeholder="987654321"></div>
+              <button class="btn btn-primary" onclick="saveSocialCreds('facebook')">Save to .env</button>
+            </div>
+            <div class="card">
+              <div class="card-header"><span class="card-title">🐦 Twitter / X</span></div>
+              <div class="alert alert-info" style="margin-bottom:12px">
+                <strong>How to get your keys:</strong><br>
+                1. Go to <strong>developer.twitter.com</strong><br>
+                2. Create a project + app<br>
+                3. Keys and Tokens tab → generate all 4 keys
+              </div>
+              <div class="form-group"><label>API Key</label><input id="tw-key" type="password" placeholder="API Key"></div>
+              <div class="form-group"><label>API Secret</label><input id="tw-secret" type="password" placeholder="API Secret"></div>
+              <div class="form-group"><label>Access Token</label><input id="tw-token" type="password" placeholder="Access Token"></div>
+              <div class="form-group"><label>Access Token Secret</label><input id="tw-token-secret" type="password" placeholder="Access Token Secret"></div>
+              <button class="btn btn-primary" onclick="saveSocialCreds('twitter')">Save to .env</button>
+            </div>
+            <div class="card">
+              <div class="card-header"><span class="card-title">💼 LinkedIn</span></div>
+              <div class="alert alert-info" style="margin-bottom:12px">
+                <strong>How to get your token:</strong><br>
+                1. Go to <strong>linkedin.com/developers</strong><br>
+                2. Create an App → request "Share on LinkedIn" permission<br>
+                3. OAuth 2.0 → generate access token
+              </div>
+              <div class="form-group"><label>Access Token</label><input id="li-token" type="password" placeholder="Access Token"></div>
+              <div class="form-group"><label>Person URN</label><input id="li-urn" placeholder="urn:li:person:ABC123"></div>
+              <button class="btn btn-primary" onclick="saveSocialCreds('linkedin')">Save to .env</button>
+            </div>
+            <div class="card">
+              <div class="card-header"><span class="card-title">▶ YouTube & TikTok</span></div>
+              <p style="font-size:13px;color:var(--muted);margin-bottom:12px">These platforms require video files to post. NOVA handles all the writing:</p>
+              <ul style="font-size:13px;line-height:2;padding-left:16px;color:var(--text)">
+                <li>✅ Full word-for-word video scripts</li>
+                <li>✅ SEO-optimized titles & descriptions</li>
+                <li>✅ Tags, hashtags, thumbnail text</li>
+                <li>✅ TikTok captions & trending audio tips</li>
+                <li>📤 You film + upload — NOVA writes everything else</li>
+              </ul>
+              <div class="alert alert-warning" style="margin-top:12px">TikTok's API restricts direct posting for most developers. YouTube direct posting coming in next update.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- MARKETING -->
+      <div id="page-marketing" class="page">
+        <div class="tabs" id="mkt-tabs">
+          <div class="tab active" onclick="switchMktTab('newsletter')">Newsletter</div>
+          <div class="tab" onclick="switchMktTab('sequence')">Email Sequences</div>
+          <div class="tab" onclick="switchMktTab('pending')">Pending Emails</div>
+        </div>
+        <div id="mkt-newsletter">
+          <div class="card" style="margin-bottom:20px">
+            <div class="card-header"><span class="card-title">Weekly Market Newsletter</span></div>
+            <div class="form-group">
+              <label>Neighborhood</label>
+              <select id="newsletter-area">
+                <option>Los Gatos</option><option>Saratoga</option><option>Cupertino</option>
+                <option>Willow Glen</option><option>Sunnyvale</option><option>Campbell</option>
+              </select>
+            </div>
+            <button class="btn btn-primary" onclick="generateNewsletter()">Generate Newsletter</button>
+          </div>
+          <div id="newsletter-result"></div>
+        </div>
+        <div id="mkt-sequence" style="display:none">
+          <div class="card">
+            <div class="card-header"><span class="card-title">Email Sequence Generator</span></div>
+            <p style="font-size:14px;color:var(--muted);margin-bottom:16px">Go to a lead's profile and click "Email Sequence" to generate a personalized follow-up series.</p>
+            <div id="marketing-result"></div>
+          </div>
+        </div>
+        <div id="mkt-pending" style="display:none">
+          <div class="card">
+            <div class="card-header"><span class="card-title">Emails Pending Approval</span><button class="btn btn-ghost btn-sm" onclick="loadPendingEmails()">Refresh</button></div>
+            <div id="pending-emails-list"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SCRIPTS & OBJECTIONS -->
+      <div id="page-scripts" class="page">
+        <div class="grid-2">
+          <div class="card">
+            <div class="card-header"><span class="card-title">Objection Handler</span></div>
+            <p style="font-size:13px;color:var(--muted);margin-bottom:16px">Type any seller objection and get a data-backed response using Tom Ferry, Mike Ferry, Brian Buffini, and Brandon Mulrenin frameworks.</p>
+            <div class="form-group"><label>Seller said…</label>
+              <textarea id="script-objection" rows="3" placeholder="Your commission is too high..."></textarea>
+            </div>
+            <button class="btn btn-primary" onclick="submitObjFromPage()">Get Response</button>
+            <div id="script-result" style="margin-top:16px"></div>
+          </div>
+          <div class="card">
+            <div class="card-header"><span class="card-title">Quick Scripts</span></div>
+            <p style="font-size:13px;color:var(--muted);margin-bottom:12px">Click any script type to see the framework:</p>
+            <div style="display:flex;flex-direction:column;gap:8px">
+              <button class="btn btn-ghost" onclick="loadScript('expired')">📋 Expired Listing (Brandon Mulrenin)</button>
+              <button class="btn btn-ghost" onclick="loadScript('fsbo')">🏠 FSBO Script (Tom Ferry)</button>
+              <button class="btn btn-ghost" onclick="loadScript('commission')">💰 Commission Objection (Mike Ferry)</button>
+              <button class="btn btn-ghost" onclick="loadScript('wait')">⏰ "I Want to Wait" Objection</button>
+              <button class="btn btn-ghost" onclick="loadScript('neighbor')">🏘 "Neighbor Sold for More"</button>
+              <button class="btn btn-ghost" onclick="loadScript('zillow')">📱 Zillow / Opendoor Objection</button>
+            </div>
+          </div>
+        </div>
+        <div id="script-library-result" style="margin-top:20px"></div>
+
+        <div class="card" style="margin-top:20px">
+          <div class="card-header"><span class="card-title">📂 My Scripts</span></div>
+          <p style="font-size:13px;color:var(--muted);margin-bottom:16px">Save your own scripts — type one in or upload a text file (.txt / .md). Your scripts can be deleted anytime; the built-in coach scripts are read-only.</p>
+          <div class="grid-2">
+            <div>
+              <div class="form-group"><label>Title</label><input id="sc-title" placeholder="My FSBO opener"></div>
+              <div class="grid-2">
+                <div class="form-group"><label>Author (optional)</label><input id="sc-author" placeholder="e.g. Tom Ferry"></div>
+                <div class="form-group"><label>Category</label>
+                  <select id="sc-category"><option>Custom</option><option>Expired</option><option>FSBO</option><option>Objection</option><option>Buyer</option><option>Prospecting</option></select>
+                </div>
+              </div>
+              <div class="form-group"><label>Script text</label><textarea id="sc-content" rows="5" placeholder="Paste or type your script here…"></textarea></div>
+              <button class="btn btn-primary" onclick="saveScript()">＋ Save Script</button>
+            </div>
+            <div>
+              <div class="form-group"><label>Or upload a file (.txt / .md)</label><input type="file" id="sc-file" accept=".txt,.md,text/plain"></div>
+              <button class="btn btn-accent" onclick="uploadScript()">⬆ Upload Script File</button>
+              <div id="sc-alert" style="margin-top:10px"></div>
+            </div>
+          </div>
+          <div id="scripts-list" style="margin-top:18px"></div>
+        </div>
+      </div>
+
+      <!-- TEMPLATES -->
+      <div id="page-templates" class="page">
+        <div class="card" style="margin-bottom:20px">
+          <div class="card-header"><span class="card-title">📧 Use a Template</span></div>
+          <p style="font-size:13px;color:var(--muted);margin-bottom:14px">Pick a template and a lead — NOVA fills in their name, address, etc. Copy the ready message into your email or texts. (NOVA prepares the text; it doesn't send.)</p>
+          <div class="grid-3">
+            <div class="form-group"><label>Template</label><select id="tpl-pick"></select></div>
+            <div class="form-group"><label>Lead</label><select id="tpl-lead"></select></div>
+            <div class="form-group" style="display:flex;align-items:flex-end"><button class="btn btn-accent" onclick="useTemplate()" style="width:100%">✨ Fill for Lead</button></div>
+          </div>
+          <div id="tpl-rendered"></div>
+        </div>
+
+        <div class="card" style="margin-bottom:20px">
+          <div class="card-header"><span class="card-title">➕ Create a Template</span></div>
+          <div class="grid-2">
+            <div class="form-group"><label>Name</label><input id="tpl-name" placeholder="e.g. Just Listed Text"></div>
+            <div class="form-group"><label>Channel</label><select id="tpl-channel"><option value="email">Email</option><option value="text">Text</option></select></div>
+          </div>
+          <div class="form-group"><label>Subject (email only)</label><input id="tpl-subject" placeholder="Quick hello about {address}"></div>
+          <div class="form-group"><label>Message</label><textarea id="tpl-body" rows="5" placeholder="Hi {first_name}, ..."></textarea></div>
+          <div id="tpl-merge" style="font-size:12px;color:var(--muted);margin-bottom:10px"></div>
+          <div id="tpl-alert"></div>
+          <button class="btn btn-primary" onclick="saveTemplate()">Save Template</button>
+        </div>
+        <div id="templates-list"></div>
+      </div>
+
+      <!-- TEAM -->
+      <div id="page-team" class="page">
+        <div id="team-overview" style="margin-bottom:20px"></div>
+        <div class="card" style="margin-bottom:20px">
+          <div class="card-header"><span class="card-title">👔 Team</span></div>
+          <p style="font-size:13px;color:var(--muted);margin-bottom:16px">Add the people on your team so you can assign leads and (later) give them their own logins. Roles help with a manager overview.</p>
+          <div class="grid-3">
+            <div class="form-group"><label>Name</label><input id="tm-name" placeholder="Jane Agent"></div>
+            <div class="form-group"><label>Email</label><input id="tm-email" placeholder="jane@brokerage.com"></div>
+            <div class="form-group"><label>Phone</label><input id="tm-phone" placeholder="(408) 555-0123"></div>
+          </div>
+          <div class="grid-3">
+            <div class="form-group"><label>Role</label>
+              <select id="tm-role"><option value="agent">Agent</option><option value="manager">Manager</option><option value="transaction_coordinator">Transaction Coordinator</option><option value="admin">Admin</option></select>
+            </div>
+            <div class="form-group" style="grid-column:span 2;display:flex;align-items:flex-end"><button class="btn btn-accent" onclick="addTeamMember()">＋ Add Team Member</button></div>
+          </div>
+          <div id="tm-alert"></div>
+          <div id="team-list" style="margin-top:10px"></div>
+        </div>
+      </div>
+
+      <!-- COACH ME -->
+      <div id="page-coach" class="page">
+        <div class="card" style="margin-bottom:20px">
+          <div class="card-header"><span class="card-title">🎓 Coach Me</span></div>
+          <p style="font-size:13px;color:var(--muted);margin-bottom:14px">Ask NOVA anything about a deal, an objection, pricing, or what to say next — she coaches you like a top broker mentor.</p>
+          <div class="form-group"><label>Your question</label><textarea id="coach-q" rows="3" placeholder="e.g. How do I get a seller to drop their price without losing the listing?"></textarea></div>
+          <button class="btn btn-primary" onclick="askCoach()">Ask Coach</button>
+          <div id="coach-prompts" style="display:flex;gap:6px;flex-wrap:wrap;margin-top:12px"></div>
+          <div id="coach-answer" style="margin-top:16px"></div>
+        </div>
+      </div>
+
+      <!-- COMPLIANCE -->
+      <div id="page-compliance" class="page">
+        <div class="card" style="margin-bottom:20px">
+          <div class="card-header"><span class="card-title">⚖️ Compliance Check</span></div>
+          <p style="font-size:13px;color:var(--muted);margin-bottom:14px">Paste a listing description, email, text, or flyer and NOVA's compliance sub-agent flags likely Fair Housing, disclosure, and advertising issues — with fixes. <strong>Safety check, not legal advice</strong> — have your broker/attorney review anything serious.</p>
+          <div class="grid-2">
+            <div class="form-group"><label>Type</label><select id="cmp-kind"><option value="listing">Listing description</option><option value="email">Email</option><option value="text">Text message</option><option value="flyer">Flyer / ad</option><option value="general">Other</option></select></div>
+          </div>
+          <div class="form-group"><label>Content to check</label><textarea id="cmp-text" rows="5" placeholder="Paste the text here…"></textarea></div>
+          <button class="btn btn-primary" onclick="runCompliance()">Check Compliance</button>
+          <div id="cmp-result" style="margin-top:16px"></div>
+        </div>
+      </div>
+
+      <!-- INTEGRATIONS -->
+      <div id="page-integrations" class="page">
+        <div class="card" style="margin-bottom:20px">
+          <div class="card-header"><span class="card-title">🔌 Integrations</span></div>
+          <p style="font-size:13px;color:var(--muted);margin-bottom:16px">Everything NOVA can connect to. A green badge means it's connected. Connecting a new one needs your account for that service — tell me and we'll set it up together.</p>
+          <div id="integrations-list"></div>
+        </div>
+      </div>
+
+    </div><!-- /content -->
+  </div><!-- /main -->
+</div><!-- /layout -->
+
+<script src="/static/js/app.js?v=nova4"></script>
+<script>
+// Extra page navigation entries
+const extraPages = ['automations','upload','listings','documents','marketing','scripts','team','integrations','forms','templates','coach','compliance'];
+extraPages.forEach(p => {
+  // Make nav items work without renderers
+  if (!pageRenderers[p]) pageRenderers[p] = () => {
+    if (p === 'listings') loadListings();
+    if (p === 'scripts') loadScripts();
+    if (p === 'documents') { loadDocuments(); loadDocIntegrations(); }
+    if (p === 'team') loadTeam();
+    if (p === 'integrations') loadIntegrations();
+    if (p === 'forms') loadFormsPage();
+    if (p === 'templates') loadTemplates();
+    if (p === 'coach') loadCoachPrompts();
+  };
+});
+
+// ─── Coach Me (NOVA coaching Ruth) ──────────────────────────────────────────
+async function loadCoachPrompts() {
+  const el = document.getElementById('coach-prompts'); if (!el) return;
+  try {
+    const ps = await api('GET', '/coach/prompts');
+    el.innerHTML = ps.map(p=>`<button class="btn btn-ghost btn-sm" onclick="document.getElementById('coach-q').value=this.textContent;askCoach()">${p.replace(/</g,'&lt;')}</button>`).join('');
+  } catch(e) {}
+}
+async function askCoach() {
+  const q = document.getElementById('coach-q').value.trim();
+  if (!q) { showAlert('Type a question first.', 'error'); return; }
+  const el = document.getElementById('coach-answer');
+  el.innerHTML = `<div class="loading-overlay"><div class="spinner"></div>Coaching…</div>`;
+  try {
+    const r = await api('POST', '/coach/ask', { question: q });
+    el.innerHTML = `<div class="card" style="box-shadow:none;border:1px solid var(--accent)"><div class="ai-output">${r.answer.replace(/</g,'&lt;')}</div></div>`;
+  } catch(e) { el.innerHTML = `<div class="alert alert-error">${e.message}</div>`; }
+}
+async function coachMe(leadId) {
+  showModal(`<div class="modal-header"><span class="modal-title">🎓 Coach Me — Next Move</span><button class="modal-close" onclick="closeModal()">×</button></div><div class="loading-overlay"><div class="spinner"></div>Thinking…</div>`);
+  try {
+    const r = await api('POST', `/coach/next-move/${leadId}`);
+    showModal(`<div class="modal-header"><span class="modal-title">🎓 Coach Me — Next Move</span><button class="modal-close" onclick="closeModal()">×</button></div><div class="ai-output">${r.answer.replace(/</g,'&lt;')}</div>`);
+  } catch(e) { showAlert(e.message, 'error'); }
+}
+
+// ─── Compliance Check (Attorney sub-agent) ──────────────────────────────────
+async function runCompliance() {
+  const text = document.getElementById('cmp-text').value.trim();
+  if (!text) { showAlert('Paste content to check.', 'error'); return; }
+  const el = document.getElementById('cmp-result');
+  el.innerHTML = `<div class="loading-overlay"><div class="spinner"></div>Reviewing for compliance…</div>`;
+  try {
+    const r = await api('POST', '/compliance/check', { text, kind: document.getElementById('cmp-kind').value });
+    const badge = { pass:'badge-a', review_recommended:'badge-c', needs_changes:'badge-d' }[r.overall] || 'badge-c';
+    const sevColor = s => s==='high'?'#c0392b':s==='medium'?'#c5882f':'#7a7468';
+    el.innerHTML = `
+      <div class="card" style="box-shadow:none;border:1px solid var(--border)">
+        <div style="margin-bottom:8px"><span class="badge ${badge}">${(r.overall||'').replace('_',' ')}</span>
+          ${r.fair_housing_ok?'<span class="badge badge-a" style="margin-left:6px">Fair Housing OK</span>':'<span class="badge badge-d" style="margin-left:6px">⚠ Fair Housing</span>'}</div>
+        <p style="font-size:14px;margin-bottom:10px">${(r.summary||'').replace(/</g,'&lt;')}</p>
+        ${(r.issues&&r.issues.length)? r.issues.map(it=>`<div style="border-left:3px solid ${sevColor(it.severity)};padding:6px 10px;margin-bottom:8px;background:rgba(255,255,255,0.05)">
+            <div style="font-weight:700;font-size:13px;color:${sevColor(it.severity)}">${it.severity?.toUpperCase()} · ${it.area||''}</div>
+            <div style="font-size:13px">${(it.issue||'').replace(/</g,'&lt;')}</div>
+            ${it.quote?`<div style="font-size:12px;color:var(--muted);margin-top:3px">“${it.quote.replace(/</g,'&lt;')}”</div>`:''}
+            <div style="font-size:13px;margin-top:4px"><strong>Fix:</strong> ${(it.fix||'').replace(/</g,'&lt;')}</div>
+          </div>`).join('') : '<div style="color:var(--success,#2e9e5b);font-size:14px">No issues flagged. ✅</div>'}
+        ${r.cleaned_version?`<div style="margin-top:10px"><div style="font-weight:700;font-size:13px;margin-bottom:4px">Suggested compliant version:</div><div class="ai-output">${r.cleaned_version.replace(/</g,'&lt;')}</div></div>`:''}
+        <p style="font-size:11px;color:var(--muted);margin-top:12px">${(r.disclaimer||'')}</p>
+      </div>`;
+  } catch(e) { el.innerHTML = `<div class="alert alert-error">${e.message}</div>`; }
+}
+
+// ─── Message Templates ──────────────────────────────────────────────────────
+let _templates = { builtin: [], custom: [] };
+
+async function loadTemplates() {
+  const listEl = document.getElementById('templates-list');
+  if (!listEl) return;
+  try {
+    const data = await api('GET', '/templates/');
+    _templates = data;
+    // merge-field hint
+    const mh = document.getElementById('tpl-merge');
+    if (mh) mh.innerHTML = 'Merge fields you can use: ' + data.merge_fields.map(f=>`<code>${f}</code>`).join(' ');
+    // populate the "use" template picker
+    const pick = document.getElementById('tpl-pick');
+    const all = [...data.builtin, ...data.custom];
+    if (pick) pick.innerHTML = all.length ? all.map((t,i)=>`<option value="${t.id}">${t.channel==='text'?'💬':'✉'} ${t.name}</option>`).join('') : '<option value="">No templates</option>';
+    // populate lead picker
+    const leadSel = document.getElementById('tpl-lead');
+    if (leadSel) { const ld = await api('GET','/leads/'); leadSel.innerHTML = ld.length ? ld.map(l=>`<option value="${l.id}">${l.first_name} ${l.last_name}</option>`).join('') : '<option value="">No leads</option>'; }
+    // render the list
+    const card = (t) => `<div class="card" style="box-shadow:none;border:1px solid var(--border);margin-bottom:10px">
+      <div class="card-header" style="margin-bottom:8px">
+        <span style="font-weight:700">${t.channel==='text'?'💬':'✉'} ${t.name} <span class="badge ${t.deletable?'badge-c':'badge-a'}" style="margin-left:6px">${t.channel}</span></span>
+        ${t.deletable?`<button class="btn btn-ghost btn-sm" style="color:var(--danger,#c0392b)" onclick="deleteTemplate(${t.id})">Delete</button>`:''}
+      </div>
+      ${t.subject?`<div style="font-size:13px"><strong>Subject:</strong> ${t.subject.replace(/</g,'&lt;')}</div>`:''}
+      <div class="ai-output" style="margin-top:6px">${(t.body||'').replace(/</g,'&lt;')}</div></div>`;
+    listEl.innerHTML = `<div style="font-weight:700;margin:6px 0 8px">Your templates (${data.custom.length})</div>` +
+      (data.custom.length ? data.custom.map(card).join('') : '<div style="color:var(--muted);font-size:13px;margin-bottom:8px">None yet — create one above.</div>') +
+      `<div style="font-weight:700;margin:14px 0 8px">Starter templates (${data.builtin.length})</div>` + data.builtin.map(card).join('');
+  } catch(e) { listEl.innerHTML = `<div class="alert alert-error">${e.message}</div>`; }
+}
+
+async function saveTemplate() {
+  const name = document.getElementById('tpl-name').value.trim();
+  const body = document.getElementById('tpl-body').value.trim();
+  if (!name || !body) { showAlert('Add a name and message.', 'error', '#tpl-alert'); return; }
+  try {
+    await api('POST','/templates/', { name, channel: document.getElementById('tpl-channel').value,
+      subject: document.getElementById('tpl-subject').value.trim(), body });
+    ['tpl-name','tpl-subject','tpl-body'].forEach(id=>document.getElementById(id).value='');
+    showAlert('✅ Template saved.', 'success', '#tpl-alert');
+    loadTemplates();
+  } catch(e) { showAlert(e.message, 'error', '#tpl-alert'); }
+}
+
+async function deleteTemplate(id) {
+  if (!confirm('Delete this template?')) return;
+  try { await api('DELETE',`/templates/${id}`); showAlert('Template deleted.'); loadTemplates(); }
+  catch(e) { showAlert(e.message, 'error'); }
+}
+
+async function useTemplate() {
+  const tid = document.getElementById('tpl-pick').value;
+  const leadId = document.getElementById('tpl-lead').value;
+  if (!tid || !leadId) { showAlert('Pick a template and a lead.', 'error'); return; }
+  const tpl = [..._templates.builtin, ..._templates.custom].find(t=>String(t.id)===String(tid));
+  if (!tpl) return;
+  try {
+    const r = await api('POST','/templates/render', { subject: tpl.subject||'', body: tpl.body, lead_id: Number(leadId) });
+    const full = (r.subject?`Subject: ${r.subject}\n\n`:'') + r.body;
+    document.getElementById('tpl-rendered').innerHTML = `
+      <div class="card" style="box-shadow:none;border:1px solid var(--accent);margin-top:12px">
+        <div class="card-header" style="margin-bottom:8px"><span style="font-weight:700">Ready to send</span>
+          <button class="btn btn-ghost btn-sm" onclick="navigator.clipboard.writeText(this.closest('.card').querySelector('.ai-output').innerText).then(()=>showAlert('Copied!'))">📋 Copy</button></div>
+        ${r.subject?`<div style="font-size:13px;margin-bottom:6px"><strong>Subject:</strong> ${r.subject.replace(/</g,'&lt;')}</div>`:''}
+        <div class="ai-output">${r.body.replace(/</g,'&lt;')}</div></div>`;
+  } catch(e) { showAlert(e.message, 'error'); }
+}
+
+// ─── Transaction Forms ──────────────────────────────────────────────────────
+async function loadFormsPage() {
+  const sel = document.getElementById('fp-lead');
+  if (!sel) return;
+  try {
+    const data = await api('GET', '/leads/');
+    sel.innerHTML = data.length
+      ? data.map(l=>`<option value="${l.id}">${l.first_name} ${l.last_name}${l.address?` — ${l.address}`:''}</option>`).join('')
+      : '<option value="">No leads yet — add one first</option>';
+  } catch(e) { sel.innerHTML = `<option>${e.message}</option>`; }
+}
+
+async function prepareForms() {
+  const leadId = document.getElementById('fp-lead').value;
+  if (!leadId) { showAlert('Pick a lead first.', 'error'); return; }
+  const res = document.getElementById('fp-result');
+  res.innerHTML = `<div class="loading-overlay"><div class="spinner"></div>Filling forms…</div>`;
+  try {
+    const data = await api('POST', '/forms/prepare', { lead_id: Number(leadId), buyer_name: document.getElementById('fp-buyer').value.trim() });
+    window._preppedForms = data.forms;
+    res.innerHTML = `
+      <div class="alert alert-warning" style="margin-bottom:14px">${data.disclaimer}</div>
+      <div style="margin-bottom:10px;font-weight:700">Prepared for ${data.prepared_for}${data.property?` — ${data.property}`:''}</div>
+      ${data.forms.map((f,i)=>`
+        <div class="card" style="box-shadow:none;border:1px solid var(--border);margin-bottom:12px">
+          <div class="card-header" style="margin-bottom:8px">
+            <span style="font-weight:700">${f.name}</span>
+            <button class="btn btn-ghost btn-sm" onclick="copyForm(${i})">📋 Copy</button>
+          </div>
+          <table style="font-size:14px"><tbody>${f.fields.map(fl=>`<tr>
+            <td style="color:var(--muted);width:42%;padding:5px 8px;border-bottom:1px solid var(--border)">${fl.label}</td>
+            <td style="padding:5px 8px;border-bottom:1px solid var(--border)">${(fl.value===''||fl.value==null)?'<span style=\"color:#c0392b\">— fill in —</span>':String(fl.value).replace(/</g,'&lt;')}</td>
+          </tr>`).join('')}</tbody></table>
+        </div>`).join('')}`;
+  } catch(e) { res.innerHTML = `<div class="alert alert-error">${e.message}</div>`; }
+}
+
+function copyForm(i) {
+  const f = (window._preppedForms||[])[i];
+  if (!f) return;
+  const text = `${f.name}\n` + f.fields.map(fl=>`${fl.label}: ${fl.value||''}`).join('\n');
+  navigator.clipboard.writeText(text).then(()=>showAlert(`Copied "${f.name}" fields.`),
+    ()=>showAlert('Copy failed — select and copy manually.', 'error'));
+}
+
+// ─── Today panel (on the Dashboard) ─────────────────────────────────────────
+async function loadToday() {
+  const el = document.getElementById('dash-today');
+  if (!el) return;
+  try {
+    const t = await api('GET', '/leads/today');
+    const miniRow = (l, action) => `<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border)">
+      <div><strong>${l.first_name} ${l.last_name}</strong> ${tempBadge(l.temperature)}<br><span style="font-size:12px;color:var(--muted)">${l.address||'—'} ${l.city||''}</span></div>
+      <div style="display:flex;gap:6px">
+        <button class="btn btn-ghost btn-sm" onclick="showLeadDetail(${l.id})">View</button>
+        ${action}
+      </div></div>`;
+    const fu = t.followups_due, hot = t.hot_leads;
+    el.innerHTML = `
+      <div style="font-size:12.5px;color:var(--muted);margin-bottom:12px">${t.date}</div>
+      <div class="stats-grid" style="grid-template-columns:repeat(3,1fr);margin-bottom:16px">
+        <div class="stat-card"><div class="stat-value" style="color:var(--danger)">${t.counts.followups_due}</div><div class="stat-label">Follow-ups Due</div></div>
+        <div class="stat-card"><div class="stat-value" style="color:#e25822">${t.counts.hot_leads}</div><div class="stat-label">Hot Leads</div></div>
+        <div class="stat-card"><div class="stat-value">${t.counts.new_leads}</div><div class="stat-label">New Leads</div></div>
+      </div>
+      <div class="grid-2">
+        <div>
+          <div style="font-weight:700;margin-bottom:4px">📅 Follow-ups due</div>
+          ${fu.length ? fu.slice(0,6).map(l=>miniRow(l, `<button class="btn btn-ghost btn-sm" onclick="draftFollowup(${l.id})">✍️ Draft</button><button class="btn btn-primary btn-sm" onclick="logCall(${l.id})">Log</button>`)).join('') : '<div style="color:var(--muted);font-size:13px;padding:8px 0">Nothing due — all caught up! 🎉</div>'}
+        </div>
+        <div>
+          <div style="font-weight:700;margin-bottom:4px">🔥 Hot leads</div>
+          ${hot.length ? hot.slice(0,6).map(l=>miniRow(l, `<button class="btn btn-primary btn-sm" onclick="getScript(${l.id})">Script</button>`)).join('') : '<div style="color:var(--muted);font-size:13px;padding:8px 0">No hot leads yet.</div>'}
+        </div>
+      </div>`;
+  } catch(e) { el.innerHTML = ''; }
+}
+
+// ─── Activity KPIs (on the Dashboard) ───────────────────────────────────────
+const KPI_META = [
+  { key:'calls', label:'📞 Calls', defGoal:25 },
+  { key:'contacts', label:'🤝 Contacts', defGoal:10 },
+  { key:'leads', label:'🌱 Leads', defGoal:3 },
+  { key:'appointments', label:'📅 Appointments', defGoal:1 },
+];
+function kpiGoals() { try { return JSON.parse(localStorage.getItem('aria_kpi_goals')||'{}'); } catch(e){ return {}; } }
+function setKpiGoal(key, val) { const g = kpiGoals(); g[key] = Math.max(0, parseInt(val)||0); localStorage.setItem('aria_kpi_goals', JSON.stringify(g)); loadKPIs(); }
+
+async function loadKPIs() {
+  const el = document.getElementById('dash-kpis');
+  if (!el) return;
+  try {
+    const k = await api('GET', '/leads/kpis');
+    const goals = kpiGoals();
+    const tile = (m) => {
+      const today = k.today[m.key]||0;
+      const goal = goals[m.key]!=null ? goals[m.key] : m.defGoal;
+      const pct = goal>0 ? Math.min(100, Math.round(today/goal*100)) : 0;
+      const done = goal>0 && today>=goal;
+      return `<div class="stat-card" style="text-align:left">
+        <div style="display:flex;justify-content:space-between;align-items:baseline">
+          <span class="stat-label" style="margin:0">${m.label}</span>
+          <span style="font-size:11px;color:var(--muted)">wk ${k.week[m.key]||0} · mo ${k.month[m.key]||0}</span>
+        </div>
+        <div style="display:flex;align-items:baseline;gap:6px;margin:4px 0">
+          <span class="stat-value" style="font-size:30px">${today}</span>
+          <span style="font-size:13px;color:var(--muted)">/ <input type="number" min="0" value="${goal}" onchange="setKpiGoal('${m.key}',this.value)" style="width:46px;padding:2px 4px;font-size:13px;display:inline;border:1px solid var(--border);border-radius:5px"> goal</span>
+          ${done?'<span title="Goal met">✅</span>':''}
+        </div>
+        <div style="height:6px;background:#eee;border-radius:4px;overflow:hidden"><div style="height:100%;width:${pct}%;background:${done?'var(--success,#2e9e5b)':'var(--accent)'}"></div></div>
+      </div>`;
+    };
+    el.innerHTML = `
+      <div style="text-align:right;font-size:12px;color:var(--muted);margin-bottom:8px">${k.as_of}</div>
+      <div class="stats-grid" style="grid-template-columns:repeat(4,1fr)">${KPI_META.map(tile).join('')}</div>
+      <p style="font-size:11px;color:var(--muted);margin-top:10px">Counts come from your logged activity (calls/contacts logged on leads, new leads added, appointments). Edit a goal number to set your daily target.</p>`;
+  } catch(e) { el.innerHTML = ''; }
+}
+
+// Make the KPI + Today panels load with the dashboard (initial + every revisit).
+(function(){
+  const _origDash = pageRenderers.dashboard;
+  pageRenderers.dashboard = async () => { if (_origDash) await _origDash(); loadKPIs(); loadToday(); };
+  // initial page load shows the dashboard before this override existed
+  if (document.getElementById('page-dashboard')?.classList.contains('active')) { loadKPIs(); loadToday(); }
+})();
+
+// ─── Team ───────────────────────────────────────────────────────────────────
+const ROLE_LABELS = { agent:'Agent', manager:'Manager', admin:'Admin', transaction_coordinator:'Transaction Coordinator' };
+let teamMembers = [];
+
+async function loadTeamOverview() {
+  const el = document.getElementById('team-overview');
+  if (!el) return;
+  try {
+    const o = await api('GET', '/team/overview');
+    const t = o.team_totals, u = o.unassigned;
+    const memberRow = (m) => `<tr>
+      <td><strong>${m.name}</strong><br><span style="font-size:11px;color:var(--muted)">${ROLE_LABELS[m.role]||m.role}</span></td>
+      <td style="font-weight:700">${m.total}</td>
+      <td>${m.hot?`<span class="badge" style="background:rgba(248,113,113,0.12);color:#c0392b">${m.hot} hot</span>`:'—'}</td>
+      <td>${m.warm||0}</td><td>${m.cold||0}</td></tr>`;
+    el.innerHTML = `
+      <div class="card">
+        <div class="card-header"><span class="card-title">📊 Manager Overview</span></div>
+        <div class="stats-grid" style="grid-template-columns:repeat(4,1fr);margin-bottom:14px">
+          <div class="stat-card"><div class="stat-value">${t.total}</div><div class="stat-label">Active Leads</div></div>
+          <div class="stat-card"><div class="stat-value" style="color:#e25822">${t.hot}</div><div class="stat-label">Hot</div></div>
+          <div class="stat-card"><div class="stat-value">${o.member_count}</div><div class="stat-label">Team Members</div></div>
+          <div class="stat-card"><div class="stat-value" style="color:var(--muted)">${u.total}</div><div class="stat-label">Unassigned</div></div>
+        </div>
+        ${o.members.length ? `<div class="table-wrap"><table>
+          <thead><tr><th>Member</th><th>Leads</th><th>Hot</th><th>Warm</th><th>Cold</th></tr></thead>
+          <tbody>${o.members.map(memberRow).join('')}
+            ${u.total ? `<tr style="opacity:.7"><td><em>Unassigned</em></td><td style="font-weight:700">${u.total}</td><td>${u.hot||0}</td><td>${u.warm||0}</td><td>${u.cold||0}</td></tr>` : ''}
+          </tbody></table></div>` : '<div style="color:var(--muted);font-size:13px">Add team members below, then assign leads to see each person’s pipeline here.</div>'}
+      </div>`;
+  } catch(e) { el.innerHTML = ''; }
+}
+
+async function loadTeam() {
+  loadTeamOverview();
+  const el = document.getElementById('team-list');
+  if (!el) return;
+  try {
+    teamMembers = await api('GET', '/team/');
+    if (!teamMembers.length) { el.innerHTML = `<div style="color:var(--muted);font-size:13px">No team members yet. Add your first above.</div>`; return; }
+    el.innerHTML = `<div class="table-wrap"><table>
+      <thead><tr><th>Name</th><th>Role</th><th>Contact</th><th>Assigned Leads</th><th>Status</th><th>Actions</th></tr></thead>
+      <tbody>${teamMembers.map(m=>`<tr>
+        <td><strong>${m.name}</strong></td>
+        <td>${ROLE_LABELS[m.role]||m.role}</td>
+        <td style="font-size:12px">${m.email||'—'}${m.phone?`<br>${m.phone}`:''}</td>
+        <td style="font-weight:700">${m.assigned_leads}</td>
+        <td>${m.active?'<span class="badge badge-a">Active</span>':'<span class="badge badge-d">Inactive</span>'}</td>
+        <td><button class="btn btn-ghost btn-sm" style="color:var(--danger,#c0392b)" onclick="deleteTeamMember(${m.id})">Remove</button></td>
+      </tr>`).join('')}</tbody></table></div>`;
+  } catch(e) { el.innerHTML = `<div class="alert alert-error">${e.message}</div>`; }
+}
+
+async function addTeamMember() {
+  const name = document.getElementById('tm-name').value.trim();
+  if (!name) { showAlert('Add a name first.', 'error', '#tm-alert'); return; }
+  try {
+    await api('POST', '/team/', { name,
+      email: document.getElementById('tm-email').value.trim(),
+      phone: document.getElementById('tm-phone').value.trim(),
+      role: document.getElementById('tm-role').value });
+    ['tm-name','tm-email','tm-phone'].forEach(id=>document.getElementById(id).value='');
+    showAlert('✅ Team member added.', 'success', '#tm-alert');
+    loadTeam();
+  } catch(e) { showAlert(e.message, 'error', '#tm-alert'); }
+}
+
+async function deleteTeamMember(id) {
+  if (!confirm('Remove this team member? Their leads will become unassigned.')) return;
+  try { await api('DELETE', `/team/${id}`); showAlert('Team member removed.'); loadTeam(); }
+  catch(e) { showAlert(e.message, 'error'); }
+}
+
+async function assignLeadPicker(leadId) {
+  let members = [];
+  try { members = await api('GET', '/team/'); } catch(e) {}
+  if (!members.length) {
+    showModal(`<div class="modal-header"><span class="modal-title">Assign Lead</span><button class="modal-close" onclick="closeModal()">×</button></div>
+      <p>No team members yet. Add them on the <strong>Team</strong> page first, then you can assign leads.</p>
+      <button class="btn btn-primary" onclick="closeModal();navigate('team')">Go to Team</button>`);
+    return;
+  }
+  showModal(`<div class="modal-header"><span class="modal-title">Assign Lead To…</span><button class="modal-close" onclick="closeModal()">×</button></div>
+    <div style="display:flex;flex-direction:column;gap:8px">
+      ${members.map(m=>`<button class="btn btn-ghost" onclick="doAssign(${leadId},${m.id})">${m.name} <span style="color:var(--muted);font-size:12px">— ${ROLE_LABELS[m.role]||m.role}</span></button>`).join('')}
+      <button class="btn btn-ghost" style="color:var(--danger,#c0392b)" onclick="doAssign(${leadId},null)">Unassign</button>
+    </div>`);
+}
+
+async function doAssign(leadId, memberId) {
+  try {
+    await api('PUT', `/leads/${leadId}/assign${memberId!=null?`?member_id=${memberId}`:''}`);
+    const lead = leads.find(l=>l.id===leadId); if (lead) lead.assigned_to = memberId;
+    closeModal();
+    showAlert(memberId!=null ? '✅ Lead assigned.' : 'Lead unassigned.');
+  } catch(e) { showAlert(e.message, 'error'); }
+}
+
+// ─── Integrations ───────────────────────────────────────────────────────────
+async function loadIntegrations() {
+  const el = document.getElementById('integrations-list');
+  if (!el) return;
+  try {
+    const groups = await api('GET', '/integrations/');
+    const groupTitles = { google:'🟢 Google Workspace', microsoft:'🔵 Microsoft 365 (optional)', ai_brain:'🧠 AI & Research', phone_calling:'📞 Phone & AI Calling' };
+    el.innerHTML = Object.entries(groups).map(([g, items])=>`
+      <div style="margin-bottom:18px">
+        <div style="font-weight:700;margin-bottom:8px">${groupTitles[g]||g}</div>
+        <div style="display:flex;flex-wrap:wrap;gap:10px">
+          ${items.map(it=>`<div class="card" style="box-shadow:none;border:1px solid var(--border);flex:1;min-width:230px">
+            <div style="font-weight:700">${it.icon} ${it.name} ${it.connected?'<span class="badge badge-a">Connected</span>':'<span class="badge badge-d">Connect</span>'}</div>
+            ${it.account?`<div style="font-size:11px;color:var(--gold-bright,#e8c074);margin-top:4px">${it.account}</div>`:''}
+            <div style="font-size:12px;color:var(--muted);margin-top:6px">${it.note}</div>
+          </div>`).join('')}
+        </div>
+      </div>`).join('');
+  } catch(e) { el.innerHTML = `<div class="alert alert-error">${e.message}</div>`; }
+}
+
+// ─── My Scripts ─────────────────────────────────────────────────────────────
+async function loadScripts() {
+  const el = document.getElementById('scripts-list');
+  if (!el) return;
+  try {
+    const data = await api('GET', '/scripts/');
+    const card = (s) => `
+      <div class="card" style="box-shadow:none;border:1px solid var(--border);margin-bottom:10px">
+        <div class="card-header" style="margin-bottom:8px">
+          <span style="font-weight:700">${s.title}${s.author?` <span style="font-size:12px;color:var(--muted)">— ${s.author}</span>`:''} <span class="badge ${s.deletable?'badge-c':'badge-a'}" style="margin-left:6px">${s.category}</span></span>
+          <span>
+            <button class="btn btn-ghost btn-sm" onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='block'?'none':'block'">View</button>
+            ${s.deletable?`<button class="btn btn-ghost btn-sm" style="color:var(--danger,#c0392b)" onclick="deleteScript(${s.id})">Delete</button>`:''}
+          </span>
+        </div>
+        <div class="ai-output" style="display:none">${(s.content||'').replace(/</g,'&lt;')}</div>
+      </div>`;
+    el.innerHTML =
+      `<div style="font-weight:700;margin:6px 0 8px">Your scripts (${data.custom.length})</div>` +
+      (data.custom.length ? data.custom.map(card).join('') : `<div style="color:var(--muted);font-size:13px;margin-bottom:8px">None yet — save or upload one above.</div>`) +
+      `<div style="font-weight:700;margin:14px 0 8px">Built-in coach scripts (${data.builtin.length})</div>` +
+      data.builtin.map(card).join('');
+  } catch(e) { el.innerHTML = `<div class="alert alert-error">${e.message}</div>`; }
+}
+
+async function saveScript() {
+  const title = document.getElementById('sc-title').value.trim();
+  const content = document.getElementById('sc-content').value.trim();
+  if (!title || !content) { showAlert('Add a title and script text first.', 'error', '#sc-alert'); return; }
+  try {
+    await api('POST', '/scripts/', { title, content,
+      author: document.getElementById('sc-author').value.trim(),
+      category: document.getElementById('sc-category').value });
+    document.getElementById('sc-title').value=''; document.getElementById('sc-content').value=''; document.getElementById('sc-author').value='';
+    showAlert('✅ Script saved.', 'success', '#sc-alert');
+    loadScripts();
+  } catch(e) { showAlert(e.message, 'error', '#sc-alert'); }
+}
+
+async function uploadScript() {
+  const f = document.getElementById('sc-file').files[0];
+  if (!f) { showAlert('Choose a .txt or .md file first.', 'error', '#sc-alert'); return; }
+  const fd = new FormData();
+  fd.append('file', f);
+  fd.append('category', document.getElementById('sc-category').value);
+  fd.append('author', document.getElementById('sc-author').value.trim());
+  try {
+    const res = await fetch(API + '/scripts/upload', { method: 'POST', body: fd });
+    if (!res.ok) throw new Error((await res.json().catch(()=>({}))).detail || 'Upload failed');
+    document.getElementById('sc-file').value='';
+    showAlert('✅ Script file uploaded.', 'success', '#sc-alert');
+    loadScripts();
+  } catch(e) { showAlert(e.message, 'error', '#sc-alert'); }
+}
+
+async function deleteScript(id) {
+  if (!confirm('Delete this script?')) return;
+  try { await api('DELETE', `/scripts/${id}`); showAlert('Script deleted.'); loadScripts(); }
+  catch(e) { showAlert(e.message, 'error'); }
+}
+
+// ─── Document Vault ─────────────────────────────────────────────────────────
+function fmtBytes(n){ if(!n) return '—'; const u=['B','KB','MB','GB']; let i=0; while(n>=1024&&i<3){n/=1024;i++;} return n.toFixed(i?1:0)+' '+u[i]; }
+
+async function loadDocuments() {
+  const el = document.getElementById('documents-list');
+  if (!el) return;
+  try {
+    const filter = document.getElementById('dv-filter')?.value || '';
+    const docs = await api('GET', '/documents/' + (filter ? `?category=${encodeURIComponent(filter)}` : ''));
+    const cnt = document.getElementById('dv-count'); if (cnt) cnt.textContent = `${docs.length} document${docs.length===1?'':'s'}`;
+    if (!docs.length) { el.innerHTML = `<div style="color:var(--muted);font-size:13px">${filter?'No documents of this type.':'No documents stored yet.'}</div>`; return; }
+    el.innerHTML = `<div class="table-wrap"><table>
+      <thead><tr><th>Document</th><th>Type</th><th>Size</th><th>Uploaded</th><th>Keep Until</th><th>Actions</th></tr></thead>
+      <tbody>${docs.map(d=>`<tr>
+        <td><strong>${d.original_name}</strong>${d.notes?`<br><span style="font-size:11px;color:var(--muted)">${d.notes}</span>`:''}</td>
+        <td>${d.category}</td>
+        <td>${fmtBytes(d.size_bytes)}</td>
+        <td style="font-size:12px">${fmtDate(d.uploaded_at)}</td>
+        <td style="font-size:12px">${fmtDate(d.retain_until)} ${d.under_retention?'<span class="badge badge-a" title="Protected by 3-year retention">🔒</span>':''}</td>
+        <td>
+          <a class="btn btn-ghost btn-sm" href="${API}/documents/${d.id}/download">⬇ Download</a>
+          <button class="btn btn-ghost btn-sm" style="color:var(--danger,#c0392b)" onclick="deleteDocument(${d.id}, ${d.under_retention})">Delete</button>
+        </td></tr>`).join('')}</tbody></table></div>`;
+  } catch(e) { el.innerHTML = `<div class="alert alert-error">${e.message}</div>`; }
+}
+
+async function uploadDocument() {
+  const f = document.getElementById('dv-file').files[0];
+  if (!f) { showAlert('Choose a file to upload.', 'error', '#dv-alert'); return; }
+  const fd = new FormData();
+  fd.append('file', f);
+  fd.append('category', document.getElementById('dv-category').value);
+  fd.append('notes', document.getElementById('dv-notes').value.trim());
+  try {
+    const res = await fetch(API + '/documents/upload', { method: 'POST', body: fd });
+    if (!res.ok) throw new Error((await res.json().catch(()=>({}))).detail || 'Upload failed');
+    document.getElementById('dv-file').value=''; document.getElementById('dv-notes').value='';
+    showAlert('✅ Document stored (kept 3 years).', 'success', '#dv-alert');
+    loadDocuments();
+  } catch(e) { showAlert(e.message, 'error', '#dv-alert'); }
+}
+
+async function deleteDocument(id, underRetention) {
+  const msg = underRetention
+    ? 'This document is under the 3-year retention requirement. Delete it anyway? (Not recommended for compliance.)'
+    : 'Delete this document?';
+  if (!confirm(msg)) return;
+  try {
+    await api('DELETE', `/documents/${id}${underRetention?'?force=true':''}`);
+    showAlert('Document deleted.'); loadDocuments();
+  } catch(e) { showAlert(e.message, 'error'); }
+}
+
+async function loadDocIntegrations() {
+  const el = document.getElementById('doc-integrations');
+  if (!el) return;
+  try {
+    const ig = await api('GET', '/documents/integrations');
+    const names = { local_vault:'🗄️ Local Vault', dropbox:'📦 Dropbox', skyslope:'🏢 SkySlope', glide:'📝 Glide' };
+    el.innerHTML = `<div style="display:flex;flex-wrap:wrap;gap:10px">` +
+      Object.entries(ig).map(([k,v])=>`
+        <div class="card" style="box-shadow:none;border:1px solid var(--border);flex:1;min-width:200px">
+          <div style="font-weight:700">${names[k]||k} ${v.connected?'<span class="badge badge-a">Connected</span>':'<span class="badge badge-d">Not connected</span>'}</div>
+          <div style="font-size:12px;color:var(--muted);margin-top:6px">${v.note}</div>
+        </div>`).join('') + `</div>`;
+  } catch(e) { el.innerHTML = `<div class="alert alert-error">${e.message}</div>`; }
+}
+
+async function loadListings() {
+  try {
+    const data = await api('GET', '/listings/');
+    listings = data;
+    if (!data.length) {
+      document.getElementById('listings-table').innerHTML = '<div style="text-align:center;padding:40px;color:var(--muted)">No listings yet. Add one above.</div>';
+      return;
+    }
+    document.getElementById('listings-table').innerHTML = `
+      <div class="table-wrap"><table>
+        <thead><tr><th>Address</th><th>City</th><th>Price</th><th>Status</th><th>DOM</th><th>Actions</th></tr></thead>
+        <tbody>${data.map(l => `<tr>
+          <td><strong>${l.address}</strong></td>
+          <td>${l.city}</td>
+          <td>${fmt$(l.list_price)}</td>
+          <td>${stageBadge(l.status)}</td>
+          <td>${l.list_date ? Math.floor((Date.now()-new Date(l.list_date))/86400000)+' days' : '—'}</td>
+          <td>
+            <button class="btn btn-ghost btn-sm" onclick="openChecklist(${l.id})">📋 Checklist</button>
+            <button class="btn btn-ghost btn-sm" onclick="getMLS(${l.id})">MLS Copy</button>
+            <button class="btn btn-ghost btn-sm" onclick="getSocial(${l.id})">Social Posts</button>
+            <button class="btn btn-primary btn-sm" onclick="getPresentation(${l.id})">Presentation</button>
+          </td>
+        </tr>`).join('')}</tbody>
+      </table></div>`;
+  } catch(e) { document.getElementById('listings-table').innerHTML = `<div class="alert alert-error">${e.message}</div>`; }
+}
+
+function showAddListing() {
+  showModal(`
+    <div class="modal-header"><span class="modal-title">Add Listing</span><button class="modal-close" onclick="closeModal()">×</button></div>
+    <div id="listing-alert"></div>
+    <div class="form-group"><label>Address *</label><input id="ls-addr" placeholder="123 Oak Street"></div>
+    <div class="grid-2">
+      <div class="form-group"><label>City *</label><input id="ls-city" placeholder="Los Gatos"></div>
+      <div class="form-group"><label>ZIP</label><input id="ls-zip" placeholder="95030"></div>
+    </div>
+    <div class="grid-2">
+      <div class="form-group"><label>List Price *</label><input id="ls-price" type="number" placeholder="1495000"></div>
+      <div class="form-group"><label>Year Built</label><input id="ls-year" type="number" placeholder="1985"></div>
+    </div>
+    <div class="grid-3">
+      <div class="form-group"><label>Beds</label><input id="ls-beds" type="number" placeholder="3" value="3"></div>
+      <div class="form-group"><label>Baths</label><input id="ls-baths" type="number" step="0.5" placeholder="2" value="2"></div>
+      <div class="form-group"><label>Sqft</label><input id="ls-sqft" type="number" placeholder="1600"></div>
+    </div>
+    <div class="form-group"><label>HOA Fee/mo</label><input id="ls-hoa" type="number" placeholder="0" value="0"></div>
+    <button class="btn btn-primary" style="width:100%;margin-top:8px" onclick="submitAddListing()">Create Listing</button>
+  `);
+}
+
+async function submitAddListing() {
+  const data = {
+    address: document.getElementById('ls-addr').value,
+    city: document.getElementById('ls-city').value,
+    zip_code: document.getElementById('ls-zip').value || '00000',
+    list_price: parseFloat(document.getElementById('ls-price').value),
+    bedrooms: parseInt(document.getElementById('ls-beds').value)||3,
+    bathrooms: parseFloat(document.getElementById('ls-baths').value)||2,
+    sqft: parseInt(document.getElementById('ls-sqft').value)||1500,
+    year_built: parseInt(document.getElementById('ls-year').value)||null,
+    hoa_fee: parseFloat(document.getElementById('ls-hoa').value)||0,
+  };
+  if (!data.address || !data.list_price) { showAlert('Address and price required','error','#listing-alert'); return; }
+  try {
+    await api('POST', '/listings/', data);
+    closeModal();
+    showAlert('Listing created!');
+    loadListings();
+  } catch(e) { showAlert(e.message,'error','#listing-alert'); }
+}
+
+async function openChecklist(listingId) {
+  try {
+    const d = await api('GET', `/listings/${listingId}/checklist`);
+    showModal(`<div class="modal-header"><span class="modal-title">📋 Transaction Checklist</span><button class="modal-close" onclick="closeModal()">×</button></div>
+      <div style="margin-bottom:8px;font-size:13px;color:var(--muted)">${d.done} of ${d.total} steps done (${d.percent}%)</div>
+      <div style="height:8px;background:#eee;border-radius:5px;overflow:hidden;margin-bottom:14px"><div style="height:100%;width:${d.percent}%;background:var(--success,#2e9e5b)"></div></div>
+      <div style="display:flex;flex-direction:column;gap:4px">
+        ${d.items.map(it=>`<label style="display:flex;align-items:center;gap:10px;padding:6px 0;border-bottom:1px solid var(--border)">
+          <input type="checkbox" ${it.done?'checked':''} onchange="toggleChecklist(${it.id},this.checked,${listingId})" style="width:auto">
+          <span style="flex:1;${it.done?'text-decoration:line-through;color:var(--muted)':''}">${it.label.replace(/</g,'&lt;')}</span>
+          <button class="btn btn-ghost btn-sm" style="color:var(--danger,#c0392b)" onclick="deleteChecklistItem(${it.id},${listingId})">✕</button>
+        </label>`).join('')}
+      </div>
+      <div style="display:flex;gap:8px;margin-top:12px">
+        <input id="ck-new" placeholder="Add a custom step…" style="flex:1">
+        <button class="btn btn-accent btn-sm" onclick="addChecklistItem(${listingId})">Add</button>
+      </div>`);
+  } catch(e) { showAlert(e.message, 'error'); }
+}
+async function toggleChecklist(itemId, done, listingId) { try { await api('PUT', `/listings/checklist/${itemId}`, { done }); openChecklist(listingId); } catch(e) { showAlert(e.message, 'error'); } }
+async function addChecklistItem(listingId) { const v = document.getElementById('ck-new').value.trim(); if (!v) return; try { await api('POST', `/listings/${listingId}/checklist`, { label: v }); openChecklist(listingId); } catch(e) { showAlert(e.message, 'error'); } }
+async function deleteChecklistItem(itemId, listingId) { try { await api('DELETE', `/listings/checklist/${itemId}`); openChecklist(listingId); } catch(e) { showAlert(e.message, 'error'); } }
+
+async function getMLS(id) {
+  const modal = document.createElement('div');
+  modal.className = 'modal-overlay';
+  modal.innerHTML = `<div class="modal"><div class="modal-header"><span class="modal-title">MLS Description</span><button class="modal-close" onclick="this.closest('.modal-overlay').remove()">×</button></div><div class="loading-overlay"><div class="spinner"></div>Writing listing copy…</div></div>`;
+  document.body.appendChild(modal);
+  const res = await api('POST', `/listings/${id}/mls-description`);
+  modal.querySelector('.modal div:last-child').innerHTML = `
+    <div class="ai-output">${res.mls_description}</div>
+    <button class="btn btn-ghost btn-sm" style="margin-top:10px" onclick="navigator.clipboard.writeText(document.querySelector('.ai-output').textContent);this.textContent='Copied!'">Copy to Clipboard</button>`;
+}
+
+async function getSocial(id) {
+  const modal = document.createElement('div');
+  modal.className = 'modal-overlay';
+  modal.innerHTML = `<div class="modal"><div class="modal-header"><span class="modal-title">Social Media Posts</span><button class="modal-close" onclick="this.closest('.modal-overlay').remove()">×</button></div><div class="loading-overlay"><div class="spinner"></div>Creating social content…</div></div>`;
+  document.body.appendChild(modal);
+  const res = await api('POST', `/listings/${id}/social-posts`);
+  const posts = res.posts || {};
+  modal.querySelector('.modal div:last-child').innerHTML = Object.entries(posts).map(([k,v]) =>
+    `<div style="margin-bottom:16px"><strong style="text-transform:capitalize">${k.replace(/_/g,' ')}:</strong><div class="ai-output" style="margin-top:6px">${v}</div></div>`
+  ).join('');
+}
+
+async function getPresentation(id) {
+  const modal = document.createElement('div');
+  modal.className = 'modal-overlay';
+  modal.innerHTML = `<div class="modal" style="max-width:800px"><div class="modal-header"><span class="modal-title">Listing Presentation</span><button class="modal-close" onclick="this.closest('.modal-overlay').remove()">×</button></div><div class="loading-overlay"><div class="spinner"></div>Building full listing presentation…</div></div>`;
+  document.body.appendChild(modal);
+  const res = await api('POST', `/listings/${id}/presentation`);
+  modal.querySelector('.modal div:last-child').innerHTML = `<div class="ai-output">${res.presentation}</div>`;
+}
+
+async function loadPendingEmails() {
+  const data = await api('GET', '/marketing/email/pending');
+  document.getElementById('pending-emails-list').innerHTML = !data.length
+    ? '<p style="color:var(--muted);padding:20px;text-align:center">No emails pending approval</p>'
+    : data.map(e => `<div class="card" style="margin-bottom:10px">
+        <div><strong>${e.subject}</strong> → ${e.to}</div>
+        <div style="font-size:12px;color:var(--muted);margin:6px 0">${e.body_preview.substring(0,200)}…</div>
+        <button class="btn btn-success btn-sm" onclick="approveEmail(${e.id})">Send Now</button>
+      </div>`).join('');
+}
+
+async function approveEmail(id) {
+  await api('POST', `/marketing/email/${id}/approve`);
+  showAlert('Email sent!');
+  loadPendingEmails();
+}
+
+function switchMktTab(tab) {
+  ['newsletter','sequence','pending'].forEach(t => {
+    document.getElementById('mkt-'+t).style.display = t===tab ? 'block' : 'none';
+    document.querySelector(`#page-marketing .tab:nth-child(${['newsletter','sequence','pending'].indexOf(t)+1})`).classList.toggle('active', t===tab);
+  });
+  if (tab === 'pending') loadPendingEmails();
+}
+
+async function submitObjFromPage() {
+  const text = document.getElementById('script-objection').value;
+  if (!text.trim()) return;
+  document.getElementById('script-result').innerHTML = `<div class="loading-overlay"><div class="spinner"></div>Getting response…</div>`;
+  const res = await api('POST', '/leads/objection', { objection: text });
+  document.getElementById('script-result').innerHTML = `
+    <div class="alert alert-info"><strong>Framework:</strong> ${res.coach_framework}</div>
+    <div class="ai-output">${res.response}</div>`;
+}
+
+const scriptTexts = {
+  expired: 'I noticed your home came off the market. Are you still wanting to sell?',
+  fsbo: 'I saw your for-sale-by-owner sign. Quick question — are you cooperating with buyer\'s agents?',
+  commission: 'Your commission is too high, I can find someone cheaper.',
+  wait: 'I want to wait for the market to go up before I sell.',
+  neighbor: 'My neighbor sold for $200,000 more than what you\'re suggesting. I want that price.',
+  zillow: 'I\'m just going to list on Zillow or try Opendoor. Why do I need an agent?'
+};
+async function loadScript(type) {
+  document.getElementById('script-library-result').innerHTML = `<div class="loading-overlay"><div class="spinner"></div>Loading script…</div>`;
+  const res = await api('POST', '/leads/objection', { objection: scriptTexts[type] });
+  document.getElementById('script-library-result').innerHTML = `
+    <div class="card"><div class="card-header"><span class="card-title">${res.coach_framework}</span></div>
+    <div class="ai-output">${res.response}</div></div>`;
+}
+
+async function scheduleAppointment(leadId) {
+  const dtStr = prompt('Enter appointment date/time (e.g. 2025-06-10T15:00:00):');
+  if (!dtStr) return;
+  try {
+    const res = await api('POST', '/calendar/listing-appointment', { lead_id: leadId, datetime_iso: dtStr });
+    closeModal();
+    showAlert(res.status === 'created' ? '✅ Appointment scheduled in Google Calendar!' : `Scheduled locally (${res.status})`);
+  } catch(e) { showAlert(e.message, 'error'); }
+}
+
+function filterLeads() {
+  const stage = document.getElementById('stage-filter').value;
+  const temp = document.getElementById('temp-filter')?.value || '';
+  const q = (document.getElementById('lead-search')?.value || '').trim().toLowerCase();
+  let filtered = leads;
+  if (stage) filtered = filtered.filter(l => l.stage === stage);
+  if (temp) filtered = filtered.filter(l => (l.temperature || 'cold') === temp);
+  if (q) filtered = filtered.filter(l =>
+    `${l.first_name||''} ${l.last_name||''} ${l.address||''} ${l.city||''} ${l.email||''} ${l.phone||''}`.toLowerCase().includes(q));
+  renderLeadsTable(filtered);
+}
+
+function exportLeadsCSV() {
+  if (!leads || !leads.length) { showAlert('No leads to export.', 'error'); return; }
+  const cols = ['first_name','last_name','email','phone','address','city','state','zip_code',
+    'property_type','score','temperature','stage','source','last_contact','next_follow_up','created_at'];
+  const esc = (v) => { const s = (v==null?'':String(v)); return /[",\n]/.test(s) ? '"'+s.replace(/"/g,'""')+'"' : s; };
+  const rows = [cols.join(',')].concat(leads.map(l => cols.map(c => esc(l[c])).join(',')));
+  const blob = new Blob([rows.join('\n')], { type: 'text/csv' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `aria-leads-${new Date().toISOString().slice(0,10)}.csv`;
+  document.body.appendChild(a); a.click(); a.remove();
+  showAlert(`✅ Exported ${leads.length} leads to CSV.`);
+}
+
+// ─── Saved smart lists (filter combos) ──────────────────────────────────────
+function smartLists() { try { return JSON.parse(localStorage.getItem('aria_smart_lists')||'[]'); } catch(e){ return []; } }
+function loadSmartLists() {
+  const el = document.getElementById('smart-lists'); if (!el) return;
+  const lists = smartLists();
+  el.innerHTML = lists.map((s,i)=>`<span class="badge" style="background:rgba(212,168,87,0.08);border:1px solid var(--accent,#c5a572);color:var(--primary);cursor:pointer;padding:5px 10px;font-size:12px" onclick="applySmartList(${i})">⭐ ${s.name.replace(/</g,'&lt;')} <span onclick="event.stopPropagation();deleteSmartList(${i})" style="color:var(--danger,#c0392b);margin-left:4px">✕</span></span>`).join('')
+    + (lists.length?'':'<span style="font-size:12px;color:var(--muted)">No saved views yet — filter your leads, then click "Save View".</span>');
+}
+function saveSmartList() {
+  const name = prompt('Name this view (e.g. "Hot sellers — San Jose"):'); if (!name) return;
+  const lists = smartLists();
+  lists.push({ name: name.trim(),
+    search: document.getElementById('lead-search')?.value||'',
+    temp: document.getElementById('temp-filter')?.value||'',
+    stage: document.getElementById('stage-filter')?.value||'' });
+  localStorage.setItem('aria_smart_lists', JSON.stringify(lists));
+  loadSmartLists(); showAlert('✅ View saved.');
+}
+function applySmartList(i) {
+  const s = smartLists()[i]; if (!s) return;
+  if (document.getElementById('lead-search')) document.getElementById('lead-search').value = s.search||'';
+  if (document.getElementById('temp-filter')) document.getElementById('temp-filter').value = s.temp||'';
+  if (document.getElementById('stage-filter')) document.getElementById('stage-filter').value = s.stage||'';
+  filterLeads();
+}
+function deleteSmartList(i) {
+  const lists = smartLists(); lists.splice(i,1);
+  localStorage.setItem('aria_smart_lists', JSON.stringify(lists));
+  loadSmartLists();
+}
+(function(){ const o = pageRenderers.leads; pageRenderers.leads = async () => { if (o) await o(); loadSmartLists(); }; })();
+</script>
+</body>
+</html>
