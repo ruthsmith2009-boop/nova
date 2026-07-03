@@ -24,7 +24,7 @@ class LeadCreate(BaseModel):
     city: Optional[str] = None
     state: Optional[str] = None
     zip_code: Optional[str] = None
-    property_type: Optional[str] = "Single Family"
+    property_type: Optional[str] = "Business Prospect"
     source: Optional[str] = None
     years_owned: Optional[int] = None
     is_absentee: Optional[bool] = False
