@@ -24,6 +24,11 @@ likely legal/advertising issues under US FEDERAL law and general marketing rules
 - PRICING / GUARANTEES: money-back or guarantee language should state the actual terms.
 - SENSITIVE / DISCRIMINATORY LANGUAGE: avoid content that targets or excludes people based on
   protected characteristics.
+- EU AI ACT (effective August 2, 2026): if the content promotes SELLING or DEPLOYING an AI tool/
+  service — especially to businesses that have EU customers or users — flag that the EU AI Act's
+  obligations (transparency, disclosure that users are interacting with AI, risk management,
+  documentation) may apply. This is a heads-up for any AI offering with EU exposure, not a US-only
+  marketing rule.
 
 You are NOT a lawyer and this is NOT legal advice — it is a safety check. Always recommend a
 licensed attorney review anything flagged high severity or legally consequential."""
@@ -42,7 +47,7 @@ Return JSON:
   "overall": "pass | review_recommended | needs_changes",
   "claims_ok": true,
   "issues": [
-    {{"severity": "high|medium|low", "area": "Advertising Claims|Testimonials|CAN-SPAM|TCPA|Pricing/Guarantee|Other",
+    {{"severity": "high|medium|low", "area": "Advertising Claims|Testimonials|CAN-SPAM|TCPA|Pricing/Guarantee|EU AI Act|Other",
       "issue": "what's wrong", "fix": "how to fix it", "quote": "the exact problematic phrase, if any"}}
   ],
   "cleaned_version": "an optional compliant rewrite of the content, or empty string",
