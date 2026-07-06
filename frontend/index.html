@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/static/css/style.css?v=nova5">
+  <link rel="stylesheet" href="/static/css/style.css?v=nova6">
 </head>
 <body>
 <div class="layout">
@@ -19,24 +19,27 @@
       <div class="tagline">AI Assistant for Small Business</div>
     </div>
     <div class="sidebar-nav">
+      <div class="nav-item simple-only" data-page="simple" data-simple="1" onclick="navigate('simple')">
+        <span class="icon">🏡</span><span>Home</span>
+      </div>
       <div class="nav-section">Command Center</div>
       <div class="nav-item active" data-page="dashboard" onclick="navigate('dashboard')">
         <span class="icon">🏠</span><span>Dashboard</span>
       </div>
-      <div class="nav-item" data-page="calllist" onclick="navigate('calllist')">
+      <div class="nav-item" data-page="calllist" data-simple="1" onclick="navigate('calllist')">
         <span class="icon">📞</span><span>Daily Call List</span>
       </div>
-      <div class="nav-item" data-page="coach" onclick="navigate('coach')">
+      <div class="nav-item" data-page="coach" data-simple="1" onclick="navigate('coach')">
         <span class="icon">🎓</span><span>Coach Me</span>
       </div>
 
       <div class="nav-section">✨ AI Automations</div>
-      <div class="nav-item" data-page="automations" onclick="navigate('automations')">
+      <div class="nav-item" data-page="automations" data-simple="1" onclick="navigate('automations')">
         <span class="icon">⚡</span><span>Live Demo</span>
       </div>
 
       <div class="nav-section">Leads & CRM</div>
-      <div class="nav-item" data-page="leads" onclick="navigate('leads')">
+      <div class="nav-item" data-page="leads" data-simple="1" onclick="navigate('leads')">
         <span class="icon">👥</span><span>All Leads</span>
       </div>
       <div class="nav-item" data-page="upload" onclick="navigate('upload')">
@@ -80,7 +83,10 @@
         <span class="icon">⚖️</span><span>Compliance Check</span>
       </div>
     </div>
-    <div class="sidebar-footer">NOVA v1.0 — Ruth Smith</div>
+    <div class="sidebar-footer">
+      <button class="btn btn-ghost btn-sm" id="simple-toggle" onclick="toggleSimpleMode()" style="width:100%;margin-bottom:10px">✨ Switch to simple view</button>
+      <div>NOVA v1.0 — Ruth Smith</div>
+    </div>
   </nav>
 
   <!-- Main Content -->
@@ -90,11 +96,41 @@
       <div class="topbar-actions">
         <div id="alert-area" style="margin-right:8px"></div>
         <button class="btn btn-accent" onclick="addLead()">+ Add Lead</button>
-        <button class="btn btn-ghost" onclick="handleObjection()">🛡 Objection Help</button>
+        <button class="btn btn-ghost" id="btn-objection" onclick="handleObjection()">🛡 Objection Help</button>
       </div>
     </div>
 
     <div class="content">
+
+      <!-- SIMPLE MODE HOME -->
+      <div id="page-simple" class="page">
+        <div style="max-width:880px;margin:0 auto">
+          <h2 id="simple-greet" style="font-size:32px;margin:10px 0 6px">Good morning!</h2>
+          <p id="simple-summary" style="font-size:17px;color:var(--muted);margin:0 0 28px">Loading your day…</p>
+          <div class="simple-grid">
+            <div class="simple-btn" onclick="navigate('calllist')">
+              <div class="s-icon">📞</div>
+              <div class="s-title">Who should I call today?</div>
+              <div class="s-sub">NOVA picks your best calls and tells you exactly what to say.</div>
+            </div>
+            <div class="simple-btn" onclick="navigate('leads')">
+              <div class="s-icon">👥</div>
+              <div class="s-title">My customers & leads</div>
+              <div class="s-sub">Everyone in one place — see who's interested and who needs attention.</div>
+            </div>
+            <div class="simple-btn" onclick="navigate('coach')">
+              <div class="s-icon">💬</div>
+              <div class="s-title">Ask NOVA anything</div>
+              <div class="s-sub">Stuck on a message, a price, or a tough customer? Just ask.</div>
+            </div>
+            <div class="simple-btn" onclick="navigate('automations')">
+              <div class="s-icon">⚡</div>
+              <div class="s-title">Watch NOVA work</div>
+              <div class="s-sub">See how NOVA answers calls, texts back missed callers, and books jobs.</div>
+            </div>
+          </div>
+        </div>
+      </div>
 
       <!-- DASHBOARD -->
       <div id="page-dashboard" class="page active">
@@ -859,7 +895,7 @@
   </div><!-- /main -->
 </div><!-- /layout -->
 
-<script src="/static/js/app.js?v=nova5"></script>
+<script src="/static/js/app.js?v=nova6"></script>
 <script>
 // Extra page navigation entries
 const extraPages = ['automations','upload','marketing','scripts','team','integrations','templates','coach','compliance'];

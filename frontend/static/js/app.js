@@ -69,16 +69,64 @@ function navigate(page) {
   currentPage = page;
   document.querySelectorAll('.nav-item').forEach(n => n.classList.toggle('active', n.dataset.page === page));
   document.querySelectorAll('.page').forEach(p => p.classList.toggle('active', p.id === 'page-' + page));
-  document.querySelector('.page-title').textContent = pageTitles[page] || 'NOVA';
+  const simple = document.body.classList.contains('simple-mode');
+  document.querySelector('.page-title').textContent =
+    (simple && simpleTitles[page]) || pageTitles[page] || 'NOVA';
   const renderer = pageRenderers[page];
   if (renderer) renderer();
 }
 
 const pageTitles = {
-  dashboard: 'Dashboard', leads: 'Leads & CRM', calllist: 'Daily Call List',
+  simple: 'Home', dashboard: 'Dashboard', leads: 'Leads & CRM', calllist: 'Daily Call List',
   automations: 'AI Automations — Live Demo', prospect: 'Prospect Research',
   marketing: 'Email & Newsletter', scripts: 'Scripts & Objections', calendar: 'Calendar'
 };
+
+// Plain-English titles shown while Simple Mode is on
+const simpleTitles = {
+  simple: 'Home', calllist: 'Who to call today', leads: 'My customers & leads',
+  coach: 'Ask NOVA', automations: 'Watch NOVA work'
+};
+
+// ─── Simple Mode (big-button view for non-technical owners) ─────────────────
+function toggleSimpleMode() {
+  const on = !document.body.classList.contains('simple-mode');
+  document.body.classList.toggle('simple-mode', on);
+  try { localStorage.setItem('nova_simple_mode', on ? '1' : '0'); } catch (e) {}
+  updateSimpleToggleLabel();
+  navigate(on ? 'simple' : 'dashboard');
+}
+
+function updateSimpleToggleLabel() {
+  const btn = document.getElementById('simple-toggle');
+  if (!btn) return;
+  btn.textContent = document.body.classList.contains('simple-mode')
+    ? '🖥 Switch to full view' : '✨ Switch to simple view';
+}
+
+async function renderSimple() {
+  const h = new Date().getHours();
+  const greet = h < 12 ? 'Good morning!' : h < 17 ? 'Good afternoon!' : 'Good evening!';
+  document.getElementById('simple-greet').textContent = greet;
+  const sum = document.getElementById('simple-summary');
+  try {
+    const [leadsData, todayData] = await Promise.all([
+      api('GET', '/leads/'),
+      api('GET', '/leads/today').catch(() => ({ counts: { followups_due: 0 } }))
+    ]);
+    leads = leadsData;
+    const hot = leads.filter(l => l.score >= 65).length;
+    const due = (todayData.counts && todayData.counts.followups_due) || 0;
+    let msg = `You have ${leads.length} lead${leads.length === 1 ? '' : 's'}`;
+    if (hot) msg += ` — ${hot} ${hot === 1 ? 'is' : 'are'} hot right now`;
+    msg += due
+      ? `. ${due} ${due === 1 ? 'person is' : 'people are'} waiting to hear back from you.`
+      : `. Nobody is overdue for a follow-up — nice work. 🎉`;
+    sum.textContent = msg;
+  } catch (e) {
+    sum.textContent = 'Tap a button below to get started.';
+  }
+}
 
 // ─── Dashboard ────────────────────────────────────────────────────────────────
 async function renderDashboard() {
@@ -1298,6 +1346,7 @@ async function loadFinanceReport() {
 
 // ─── Page Renderers ───────────────────────────────────────────────────────────
 const pageRenderers = {
+  simple: renderSimple,
   dashboard: renderDashboard,
   leads: renderLeads,
   calllist: renderCallList,
@@ -1310,7 +1359,11 @@ const pageRenderers = {
 
 // ─── Init ─────────────────────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
-  navigate('dashboard');
+  let simpleOn = false;
+  try { simpleOn = localStorage.getItem('nova_simple_mode') === '1'; } catch (e) {}
+  if (simpleOn) document.body.classList.add('simple-mode');
+  updateSimpleToggleLabel();
+  navigate(simpleOn ? 'simple' : 'dashboard');
   document.getElementById('alert-area').innerHTML = '';
 });
 
