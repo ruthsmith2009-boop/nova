@@ -74,4 +74,18 @@ def list_integrations():
              "connected": _c(s.twilio_account_sid), "note": "The business phone number NOVA calls & texts from.",
              "env": "TWILIO_ACCOUNT_SID"},
         ],
+        "automation": [
+            {"key": "zapier", "name": "Zapier", "icon": "⚡",
+             "connected": _c(s.zapier_webhook_url),
+             "note": "Send new leads, booked jobs & missed calls to 7,000+ apps. Paste your Zap's webhook URL to connect.",
+             "env": "ZAPIER_WEBHOOK_URL"},
+            {"key": "make", "name": "Make (Integromat)", "icon": "🔧",
+             "connected": _c(s.make_webhook_url),
+             "note": "Build visual multi-step automations. Paste your Make scenario webhook URL to connect.",
+             "env": "MAKE_WEBHOOK_URL"},
+            {"key": "n8n", "name": "n8n", "icon": "🔗",
+             "connected": _c(s.n8n_webhook_url),
+             "note": "Self-hosted, no per-task fees. Paste your n8n Webhook node URL to connect.",
+             "env": "N8N_WEBHOOK_URL"},
+        ],
     }

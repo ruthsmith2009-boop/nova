@@ -72,6 +72,13 @@ class Settings(BaseSettings):
     # Shared secret for the inbound lead webhook (Zapier). If set, callers must pass ?token=
     leadgen_webhook_token: Optional[str] = None
 
+    # ── Automation platforms (no-code) ──
+    # NOVA pushes events (new lead, booked job, missed call) to these webhook URLs so a
+    # scenario/workflow can fan them out to any of 1000s of apps. Leave blank to show "Connect".
+    zapier_webhook_url: Optional[str] = None
+    make_webhook_url: Optional[str] = None       # Make.com (formerly Integromat)
+    n8n_webhook_url: Optional[str] = None
+
     # Login wall for the deployed app. If both set, the dashboard + API require these.
     # Leave blank for local development (no login prompt).
     aria_username: Optional[str] = None

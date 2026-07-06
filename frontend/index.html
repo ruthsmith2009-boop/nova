@@ -1219,7 +1219,7 @@ async function loadIntegrations() {
   if (!el) return;
   try {
     const groups = await api('GET', '/integrations/');
-    const groupTitles = { google:'🟢 Google Workspace', microsoft:'🔵 Microsoft 365 (optional)', ai_brain:'🧠 AI & Research', phone_calling:'📞 Phone & AI Calling' };
+    const groupTitles = { google:'🟢 Google Workspace', microsoft:'🔵 Microsoft 365 (optional)', ai_brain:'🧠 AI & Research', phone_calling:'📞 Phone & AI Calling', automation:'⚡ Automation (Zapier, Make, n8n)' };
     el.innerHTML = Object.entries(groups).map(([g, items])=>`
       <div style="margin-bottom:18px">
         <div style="font-weight:700;margin-bottom:8px">${groupTitles[g]||g}</div>
