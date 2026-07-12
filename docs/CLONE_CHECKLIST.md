@@ -36,10 +36,23 @@ keys and data). Start the client's `.env` fresh from `.env.example`.
 | `SENDGRID_API_KEY`, `SENDGRID_FROM_EMAIL`, `SENDGRID_FROM_NAME` | Outbound email — from-address should be the client's domain |
 | `VAPI_API_KEY`, `VAPI_PHONE_NUMBER_ID`, `VAPI_ASSISTANT_ID` | AI voice calling |
 | `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, `TWILIO_PHONE_NUMBER` | The client's phone line (buy a local number) |
+| `VAPI_VOICE`, `VAPI_VOICE_PROVIDER`, `NOVA_PHONE_NUMBER` | Client's voice + business number — see "Telephony (per client)" below |
 | `VAPI_WEBHOOK_SECRET` | Shared secret protecting `/calling/webhook` — set the SAME value as the "Server URL Secret" in the Vapi dashboard |
 | `LEADGEN_WEBHOOK_TOKEN` | Shared secret for the Zapier inbound-lead webhook |
 | `DATABASE_URL` | Where the SQLite db lives — see step 5 |
 | `GOOGLE_ACCOUNT_EMAIL` + calendar keys | The client's Google account for Calendar/Gmail |
+
+## 2b. Telephony (per client)
+
+Every client gets their own number and voice:
+
+1. **Buy the client a Twilio local number** (their area code) in the Twilio console.
+2. **Import the number into Vapi** — Vapi dashboard → Phone Numbers → Import (provider = `twilio`, using the client's `TWILIO_ACCOUNT_SID`/`TWILIO_AUTH_TOKEN`).
+3. **Create a client-named inbound assistant** in Vapi — greeting must include an AI disclosure and the business name from env, e.g. "Thanks for calling `BUSINESS_NAME` — I'm the AI assistant, how can I help?"
+4. **Attach the assistant to the number** (Vapi phone number → Inbound → select the assistant).
+5. **Set the env vars**: `NOVA_PHONE_NUMBER` = the new number (E.164), and `VAPI_VOICE`:
+   - a stock Vapi voice name (keep `VAPI_VOICE_PROVIDER=vapi`), or
+   - an ElevenLabs voice ID with `VAPI_VOICE_PROVIDER=11labs` — cloned from ~2 min of the client's audio, **with their written consent**.
 
 ## 3. Re-theme (CSS variables only)
 

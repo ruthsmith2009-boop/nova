@@ -140,8 +140,8 @@ async def place_call(phone: str, assistant_config: dict, lead_context: dict = No
                 "messages": [{"role": "system",
                               "content": assistant_config.get("system_prompt", "")}],
             },
-            "voice": {"provider": "vapi",
-                      "voiceId": assistant_config.get("voice_id", settings.vapi_default_voice)},
+            "voice": {"provider": settings.vapi_voice_provider,
+                      "voiceId": assistant_config.get("voice_id", settings.vapi_voice)},
             "endCallPhrases": assistant_config.get("end_call_phrases", ["goodbye"]),
         },
     }

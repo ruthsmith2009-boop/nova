@@ -1,3 +1,4 @@
+from pydantic import AliasChoices, Field
 from pydantic_settings import BaseSettings
 from typing import Optional
 
@@ -59,7 +60,19 @@ class Settings(BaseSettings):
     vapi_api_key: Optional[str] = None
     vapi_phone_number_id: Optional[str] = None    # Vapi-managed phone number ID
     vapi_assistant_id: Optional[str] = None       # optional pre-built assistant
-    vapi_default_voice: str = "Savannah"          # Vapi voice name (must be a valid Vapi voice: Clara, Godfrey, Elliot, Savannah, Nico, Kai, Emma, Sagar, Neil, Layla, Sid, Gustavo, Kylie, Rohan, Lily, Hana, Neha, Cole, Harry, Paige, Spencer, Naina, Leah, Tara, Jess, Leo, Dan, Mia, Zac, Zoe)
+    # Voice per client. For provider "vapi" this is a Vapi voice name (Clara, Godfrey,
+    # Elliot, Savannah, Nico, Kai, Emma, Sagar, Neil, Layla, Sid, Gustavo, Kylie, Rohan,
+    # Lily, Hana, Neha, Cole, Harry, Paige, Spencer, Naina, Leah, Tara, Jess, Leo, Dan,
+    # Mia, Zac, Zoe). For provider "11labs" it is an ElevenLabs voice ID (e.g. a voice
+    # cloned for the client). VAPI_DEFAULT_VOICE is accepted as a legacy env name.
+    vapi_voice: str = Field("Savannah",
+                            validation_alias=AliasChoices("VAPI_VOICE", "VAPI_DEFAULT_VOICE"))
+    vapi_voice_provider: str = "vapi"             # "vapi" (stock) or "11labs" (cloned voices)
+
+    # The client-facing business phone number (the Twilio number imported into Vapi),
+    # E.164 e.g. +14085550100 — shown in emails/UI; distinct from TWILIO_PHONE_NUMBER creds.
+    business_phone_number: str = Field("", validation_alias=AliasChoices(
+        "NOVA_PHONE_NUMBER", "BUSINESS_PHONE_NUMBER"))
 
     twilio_account_sid: Optional[str] = None
     twilio_auth_token: Optional[str] = None
