@@ -49,7 +49,7 @@ const CADENCE_OPTIONS = {
 
 function stageBadge(st) {
   const map = { new: 'badge-new', contacted: 'badge-b', appointment_set: 'badge-pending',
-    listing_active: 'badge-active', under_contract: 'badge-pending', closed: 'badge-closed', dead: 'badge-d' };
+    under_contract: 'badge-pending', closed: 'badge-closed', dead: 'badge-d' };
   const label = st.replace(/_/g,' ').replace(/\b\w/g,c=>c.toUpperCase());
   return `<span class="badge ${map[st]||'badge-new'}">${label}</span>`;
 }
@@ -139,7 +139,7 @@ async function renderDashboard() {
     leads = leadsData; listings = [];
 
     const apptsSet = leads.filter(l => l.stage === 'appointment_set').length;
-    const inProgress = leads.filter(l => l.stage === 'listing_active' || l.stage === 'under_contract').length;
+    const inProgress = leads.filter(l => l.stage === 'under_contract').length;
     const won = leads.filter(l => l.stage === 'closed').length;
     const hotLeads = leads.filter(l => l.score >= 65).length;
 
@@ -151,9 +151,9 @@ async function renderDashboard() {
     `;
 
     // Pipeline view (business sales pipeline — labels only; backend stages unchanged)
-    const stages = ['new','contacted','appointment_set','listing_active','under_contract','closed'];
+    const stages = ['new','contacted','appointment_set','under_contract','closed'];
     const stageLabels = { new:'New Leads', contacted:'Contacted', appointment_set:'Appt Booked',
-      listing_active:'Proposal Sent', under_contract:'Closing', closed:'Won' };
+      under_contract:'Closing', closed:'Won' };
     let pipelineHtml = '';
     stages.forEach(st => {
       const stLeads = leads.filter(l => l.stage === st);

@@ -63,7 +63,7 @@ def manager_overview(db: Session = Depends(get_db)):
         temp = (lead.temperature or "cold")
         if temp in bucket:
             bucket[temp] += 1
-        stage = lead.stage.value if lead.stage else "new"
+        stage = lead.stage or "new"
         bucket["by_stage"][stage] = bucket["by_stage"].get(stage, 0) + 1
 
     per_member = {m.id: {"id": m.id, "name": m.name, "role": m.role, **blank()} for m in members}

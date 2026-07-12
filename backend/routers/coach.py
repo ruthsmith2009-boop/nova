@@ -29,7 +29,7 @@ async def ask(req: AskRequest, db: Session = Depends(get_db)):
         lead = db.query(Lead).filter(Lead.id == req.lead_id).first()
         if lead:
             ctx = (f"{lead.first_name} {lead.last_name}, {lead.address or ''} {lead.city or ''}, "
-                   f"temp {lead.temperature}, stage {lead.stage.value if lead.stage else 'new'}, "
+                   f"temp {lead.temperature}, stage {lead.stage or 'new'}, "
                    f"score {lead.score}, situation {lead.life_event or 'unknown'}")
     answer = await coach_answer(req.question, ctx)
     return {"answer": answer}

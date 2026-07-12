@@ -157,7 +157,7 @@ def seed_demo(db: Session = Depends(get_db)):
             first_name=fn, last_name=ln, address=addr, city=city, state="CA",
             zip_code=zc, phone=phone, email=email, property_type="Single Family",
             source=DEMO_SOURCE, score=float(score), temperature=temp,
-            stage=LeadStage(stage), life_event=life_event,
+            stage=LeadStage(stage).value, life_event=life_event,
             follow_up_cadence=default_cadence_for_temperature(temp),
             next_follow_up=now + timedelta(days=next_days),
             last_contact=(now - timedelta(days=last_days)) if last_days else None,
@@ -441,7 +441,7 @@ async def draft_followup(lead_id: int, channel: str = "auto", db: Session = Depe
         f"Goal: build the relationship and move toward a booked call — helpful, never pushy.\n\n"
         f"Lead: {lead.first_name} {lead.last_name}\n"
         f"Company / location: {lead.address or ''} {lead.city or ''}, {lead.state or ''}\n"
-        f"Pipeline stage: {lead.stage.value if lead.stage else 'new'} | Temperature: {lead.temperature}\n"
+        f"Pipeline stage: {lead.stage or 'new'} | Temperature: {lead.temperature}\n"
         f"What they need / situation: {lead.life_event or 'unknown'}\n"
         f"Days since last contact: {days_since if days_since is not None else 'never contacted'}\n"
         f"Recent contact history: {history}\n\n"
@@ -512,14 +512,10 @@ def _serialize_lead(lead: Lead) -> dict:
         "state": lead.state,
         "zip_code": lead.zip_code,
         "property_type": lead.property_type,
-        "bedrooms": lead.bedrooms,
-        "bathrooms": lead.bathrooms,
-        "sqft": lead.sqft,
         "lot_size": lead.lot_size,
         "year_built": lead.year_built,
         "last_sold_price": lead.last_sold_price,
         "last_sold_date": lead.last_sold_date,
-        "estimated_value": lead.estimated_value,
         "property_enriched": lead.property_enriched,
         "enrichment_confidence": lead.enrichment_confidence,
         "score": lead.score,
@@ -531,7 +527,7 @@ def _serialize_lead(lead: Lead) -> dict:
         "days_on_market": lead.days_on_market,
         "price_reductions": lead.price_reductions,
         "life_event": lead.life_event,
-        "stage": lead.stage.value if lead.stage else "new",
+        "stage": lead.stage or "new",
         "temperature": lead.temperature or "cold",
         "follow_up_cadence": lead.follow_up_cadence,
         "source": lead.source,

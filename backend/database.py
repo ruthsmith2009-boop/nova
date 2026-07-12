@@ -1,6 +1,6 @@
 from sqlalchemy import (
     create_engine, Column, Integer, String, Float, DateTime, Text,
-    Boolean, JSON, ForeignKey, Enum
+    Boolean, JSON, ForeignKey
 )
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, relationship
@@ -29,7 +29,6 @@ class LeadStage(str, enum.Enum):
     new = "new"
     contacted = "contacted"
     appointment_set = "appointment_set"
-    listing_active = "listing_active"
     under_contract = "under_contract"
     closed = "closed"
     dead = "dead"
@@ -50,14 +49,10 @@ class Lead(Base):
     property_type = Column(String(50))
 
     # Property details (auto-filled from the address via enrichment; all editable)
-    bedrooms = Column(Integer, nullable=True)
-    bathrooms = Column(Float, nullable=True)
-    sqft = Column(Integer, nullable=True)
     lot_size = Column(String(50), nullable=True)
     year_built = Column(Integer, nullable=True)
     last_sold_price = Column(Float, nullable=True)
     last_sold_date = Column(String(30), nullable=True)
-    estimated_value = Column(Float, nullable=True)
     property_enriched = Column(Boolean, default=False)
     enrichment_confidence = Column(String(20), nullable=True)  # high | medium | low
 
@@ -73,7 +68,9 @@ class Lead(Base):
     life_event = Column(String(100), nullable=True)  # divorce, probate, job_change
 
     # CRM fields
-    stage = Column(Enum(LeadStage), default=LeadStage.new)
+    # Stored as a plain string (not a DB enum) so legacy stage values in existing
+    # databases (e.g. the retired "listing_active") load without crashing.
+    stage = Column(String(30), default=LeadStage.new.value)
     temperature = Column(String(20), default="cold")  # hot | warm | cold | not_ready
     follow_up_cadence = Column(String(30), nullable=True)  # weekly, biweekly, monthly, 90_day, quarterly, 6_month, yearly, 1_2_year, not_ready_7day
     source = Column(String(100))
@@ -93,7 +90,6 @@ class Lead(Base):
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
     touchpoints = relationship("Touchpoint", back_populates="lead", cascade="all, delete-orphan")
-    listing = relationship("Listing", back_populates="lead", uselist=False)
 
 
 class Touchpoint(Base):
@@ -109,69 +105,6 @@ class Touchpoint(Base):
     created_at = Column(DateTime, default=datetime.utcnow)
 
     lead = relationship("Lead", back_populates="touchpoints")
-
-
-class Listing(Base):
-    __tablename__ = "listings"
-
-    id = Column(Integer, primary_key=True, index=True)
-    lead_id = Column(Integer, ForeignKey("leads.id"), nullable=True)
-    mls_number = Column(String(50), nullable=True)
-    address = Column(String(300))
-    city = Column(String(100))
-    zip_code = Column(String(20))
-    list_price = Column(Float)
-    sale_price = Column(Float, nullable=True)
-    bedrooms = Column(Integer)
-    bathrooms = Column(Float)
-    sqft = Column(Integer)
-    lot_size = Column(String(50))
-    year_built = Column(Integer)
-    property_type = Column(String(50))
-    hoa_fee = Column(Float, default=0)
-
-    list_date = Column(DateTime, nullable=True)
-    close_date = Column(DateTime, nullable=True)
-    status = Column(String(50), default="pre_listing")  # pre_listing, active, pending, closed, cancelled
-
-    mls_description = Column(Text, default="")
-    marketing_notes = Column(Text, default="")
-    showing_instructions = Column(Text, default="")
-
-    # Transaction tracking
-    escrow_number = Column(String(100), nullable=True)
-    escrow_company = Column(String(200), nullable=True)
-    title_company = Column(String(200), nullable=True)
-    buyer_agent = Column(String(200), nullable=True)
-    buyer_lender = Column(String(200), nullable=True)
-    inspection_date = Column(DateTime, nullable=True)
-    appraisal_date = Column(DateTime, nullable=True)
-    contingency_removal_date = Column(DateTime, nullable=True)
-    close_escrow_date = Column(DateTime, nullable=True)
-
-    documents = Column(JSON, default=list)
-    created_at = Column(DateTime, default=datetime.utcnow)
-    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
-
-    lead = relationship("Lead", back_populates="listing")
-    cma = relationship("CMAReport", back_populates="listing", uselist=False)
-
-
-class CMAReport(Base):
-    __tablename__ = "cma_reports"
-
-    id = Column(Integer, primary_key=True, index=True)
-    listing_id = Column(Integer, ForeignKey("listings.id"), nullable=True)
-    address = Column(String(300))
-    suggested_price_low = Column(Float)
-    suggested_price_mid = Column(Float)
-    suggested_price_high = Column(Float)
-    pricing_strategy = Column(String(50))  # aggressive, moderate, conservative
-    comps = Column(JSON, default=list)
-    market_analysis = Column(Text)
-    created_at = Column(DateTime, default=datetime.utcnow)
-
-    listing = relationship("Listing", back_populates="cma")
 
 
 class MarketSnapshot(Base):
@@ -221,7 +154,7 @@ class SocialPost(Base):
     __tablename__ = "social_posts"
 
     id = Column(Integer, primary_key=True, index=True)
-    listing_id = Column(Integer, ForeignKey("listings.id"), nullable=True)
+    listing_id = Column(Integer, nullable=True)  # legacy reference (listings table removed)
     content_type = Column(String(100))   # listing, market_update, just_sold, open_house, tip, custom
     subject = Column(String(500))
     platforms = Column(JSON, default=list)
@@ -367,7 +300,7 @@ class ChecklistItem(Base):
     __tablename__ = "checklist_items"
 
     id = Column(Integer, primary_key=True, index=True)
-    listing_id = Column(Integer, ForeignKey("listings.id"))
+    listing_id = Column(Integer, nullable=True)  # legacy reference (listings table removed)
     label = Column(String(300))
     done = Column(Boolean, default=False)
     sort = Column(Integer, default=0)
@@ -398,7 +331,7 @@ class Document(Base):
     size_bytes = Column(Integer, default=0)
     category = Column(String(80), default="Other")     # RLA, TDS, Disclosure, Contract, ID, Other
     lead_id = Column(Integer, ForeignKey("leads.id"), nullable=True)
-    listing_id = Column(Integer, ForeignKey("listings.id"), nullable=True)
+    listing_id = Column(Integer, nullable=True)  # legacy reference (listings table removed)
     notes = Column(Text, default="")
     storage = Column(String(40), default="local")      # local | dropbox | skyslope | glide
     external_url = Column(String(500), nullable=True)  # set when synced to an external provider
@@ -419,14 +352,10 @@ def migrate():
         "ALTER TABLE leads ADD COLUMN temperature VARCHAR(20) DEFAULT 'cold'",
         "ALTER TABLE leads ADD COLUMN follow_up_cadence VARCHAR(30)",
         "ALTER TABLE leads ADD COLUMN state VARCHAR(20)",
-        "ALTER TABLE leads ADD COLUMN bedrooms INTEGER",
-        "ALTER TABLE leads ADD COLUMN bathrooms FLOAT",
-        "ALTER TABLE leads ADD COLUMN sqft INTEGER",
         "ALTER TABLE leads ADD COLUMN lot_size VARCHAR(50)",
         "ALTER TABLE leads ADD COLUMN year_built INTEGER",
         "ALTER TABLE leads ADD COLUMN last_sold_price FLOAT",
         "ALTER TABLE leads ADD COLUMN last_sold_date VARCHAR(30)",
-        "ALTER TABLE leads ADD COLUMN estimated_value FLOAT",
         "ALTER TABLE leads ADD COLUMN property_enriched BOOLEAN DEFAULT 0",
         "ALTER TABLE leads ADD COLUMN enrichment_confidence VARCHAR(20)",
         "ALTER TABLE leads ADD COLUMN is_deleted BOOLEAN DEFAULT 0",
