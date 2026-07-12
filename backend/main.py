@@ -14,7 +14,7 @@ from fastapi.responses import FileResponse, Response
 from database import create_tables
 from routers import (
     leads, marketing, calendar, social, calling, leadgen, finance,
-    scripts, team, integrations, templates, coach, compliance,
+    scripts, team, integrations, templates, coach, compliance, sms,
 )
 from config import settings
 
@@ -38,7 +38,7 @@ app.add_middleware(
 # (Vapi, Zapier) must reach them, and they carry their own token security.
 import base64
 
-PUBLIC_PATHS = ("/health", "/calling/webhook", "/leadgen/inbound")
+PUBLIC_PATHS = ("/health", "/calling/webhook", "/leadgen/inbound", "/sms/incoming")
 
 
 @app.middleware("http")
@@ -81,6 +81,7 @@ app.include_router(integrations.router)
 app.include_router(templates.router)
 app.include_router(coach.router)
 app.include_router(compliance.router)
+app.include_router(sms.router)
 
 # Serve frontend
 frontend_path = os.path.join(os.path.dirname(__file__), "..", "frontend")

@@ -312,6 +312,31 @@ class MessageTemplate(Base):
     created_at = Column(DateTime, default=datetime.utcnow)
 
 
+class SmsOptOut(Base):
+    """A phone number that replied STOP — never text it again. Twilio also blocks
+    STOP'd numbers at the carrier level; this is belt-and-suspenders on our side."""
+    __tablename__ = "sms_opt_outs"
+
+    id = Column(Integer, primary_key=True, index=True)
+    phone = Column(String(50), unique=True, index=True)   # E.164
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+
+class SmsLog(Base):
+    """Every SMS in/out. Outbound kind='textback' rows double as the missed-call
+    dedupe: a number never gets more than one text-back per 24 hours."""
+    __tablename__ = "sms_logs"
+
+    id = Column(Integer, primary_key=True, index=True)
+    lead_id = Column(Integer, ForeignKey("leads.id"), nullable=True)
+    phone = Column(String(50), index=True)                 # E.164
+    direction = Column(String(20))                         # inbound | outbound
+    kind = Column(String(40), default="")                  # textback | reply | inbound | opt_out
+    body = Column(Text, default="")
+    status = Column(String(50), default="")                # sent | failed | received | skipped
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+
 class Document(Base):
     """A stored compliance/transaction document. CA brokers must retain records 3 years."""
     __tablename__ = "documents"

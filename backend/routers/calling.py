@@ -196,6 +196,32 @@ async def single_call(req: SingleCallRequest, db: Session = Depends(get_db)):
     return {"call_record_id": record.id, **result}
 
 
+# ── Missed-call detection (for the SMS text-back) ─────────────────────────────
+# Vapi end reasons that mean the caller never got a real conversation.
+MISSED_END_REASONS = {
+    "no-answer", "busy", "customer-busy", "customer-did-not-answer",
+    "twilio-failed-to-connect-call", "silence-timed-out",
+    "assistant-did-not-receive-customer-audio",
+}
+# A customer-ended-call under this many seconds = they hung up right away.
+SHORT_CALL_SECONDS = 10
+
+
+def _is_missed_inbound(msg: dict, call: dict, duration) -> bool:
+    """True when an INBOUND call ended without a meaningful conversation —
+    caller hung up immediately, line was busy, or the call never connected."""
+    if "inbound" not in str(call.get("type") or "").lower():
+        return False  # outbound campaign calls never get a text-back
+    reason = str(msg.get("endedReason") or call.get("endedReason") or "").lower()
+    if reason in MISSED_END_REASONS:
+        return True
+    try:
+        seconds = float(duration or 0)
+    except (TypeError, ValueError):
+        seconds = 0.0
+    return reason == "customer-ended-call" and seconds < SHORT_CALL_SECONDS
+
+
 # ── Webhook (Vapi posts call events here) ──────────────────────────────────────
 @router.post("/webhook")
 async def vapi_webhook(request: Request, db: Session = Depends(get_db)):
@@ -224,21 +250,44 @@ async def vapi_webhook(request: Request, db: Session = Depends(get_db)):
     if event in ("end-of-call-report", "call.ended"):
         call = msg.get("call", {})
         provider_call_id = call.get("id") or msg.get("callId")
+        duration = msg.get("durationSeconds") or call.get("duration")
+
+        # Missed-call text-back: an inbound caller hung up / never connected.
+        # handle_missed_call is a no-op unless SMS_TEXTBACK_ENABLED=true (the
+        # feature stays off until the A2P 10DLC campaign is approved), and it
+        # dedupes (1 text per number per 24h), respects STOP opt-outs, and logs
+        # a touchpoint on the lead (creating one with source "missed-call").
+        textback = None
+        if settings.sms_textback_enabled and _is_missed_inbound(msg, call, duration):
+            caller = ((call.get("customer") or {}).get("number")
+                      or (msg.get("customer") or {}).get("number"))
+            if caller:
+                from agents.sms import handle_missed_call
+                try:
+                    textback = await handle_missed_call(db, caller)
+                except Exception as e:
+                    textback = {"status": "error", "error": str(e)}
+
         record = db.query(CallRecord).filter(
             CallRecord.provider_call_id == provider_call_id).first()
         if not record:
-            return {"status": "no_matching_record"}
+            # Normal for inbound calls Vapi answered directly (no outbound record).
+            resp = {"status": "no_matching_record"}
+            if textback:
+                resp["textback"] = textback
+            return resp
         # Idempotency: if this call was already finalized, don't count it twice.
         if record.status == "completed":
             return {"status": "already_processed"}
 
         transcript = msg.get("transcript", "") or msg.get("artifact", {}).get("transcript", "")
         summary = msg.get("summary", "") or msg.get("analysis", {}).get("summary", "")
-        duration = msg.get("durationSeconds") or call.get("duration")
         recording = msg.get("recordingUrl") or msg.get("artifact", {}).get("recordingUrl")
 
         result = await process_call_result(db, record.id, transcript, summary,
                                            duration, recording)
+        if textback:
+            result["textback"] = textback
         return {"status": "processed", **result}
 
     return {"status": "ignored", "event": event}

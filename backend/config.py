@@ -78,6 +78,17 @@ class Settings(BaseSettings):
     twilio_auth_token: Optional[str] = None
     twilio_phone_number: Optional[str] = None     # your purchased number, E.164 e.g. +14085550100
 
+    # ── Missed-call text-back (SMS) ──
+    # Ships DISABLED: flip SMS_TEXTBACK_ENABLED=true only after the A2P 10DLC
+    # campaign clears carrier vetting — texting before approval gets messages
+    # filtered by carriers and can hurt the number's reputation.
+    sms_textback_enabled: bool = False
+    # Custom text-back body. Leave blank to use the default built from business_name.
+    sms_textback_message: str = ""
+    # Shared secret for the Twilio inbound-SMS webhook. If set, Twilio must call
+    # /sms/incoming?token=<value> or the webhook returns 401.
+    sms_webhook_token: str = ""
+
     # Public base URL for receiving call webhooks (e.g. ngrok or deployed domain)
     public_base_url: Optional[str] = None
 
