@@ -285,12 +285,20 @@ def get_lead(lead_id: int, db: Session = Depends(get_db)):
     return _serialize_lead(lead)
 
 
+# Server-managed columns a client must never set via the generic update endpoint.
+PROTECTED_LEAD_FIELDS = {
+    "id", "created_at", "updated_at", "is_deleted", "deleted_at",
+}
+
+
 @router.put("/{lead_id}")
 def update_lead(lead_id: int, updates: dict, db: Session = Depends(get_db)):
     lead = db.query(Lead).filter(Lead.id == lead_id).first()
     if not lead:
         raise HTTPException(status_code=404, detail="Lead not found")
     for key, value in updates.items():
+        if key in PROTECTED_LEAD_FIELDS or key.startswith("_"):
+            continue
         if hasattr(lead, key):
             setattr(lead, key, value)
     lead.updated_at = datetime.utcnow()

@@ -1,6 +1,8 @@
 """
 AI Calling router — campaign control, single calls, and the Vapi webhook.
 """
+import secrets
+
 from fastapi import APIRouter, Depends, HTTPException, Request, BackgroundTasks
 from sqlalchemy.orm import Session
 from pydantic import BaseModel
@@ -197,7 +199,21 @@ async def single_call(req: SingleCallRequest, db: Session = Depends(get_db)):
 # ── Webhook (Vapi posts call events here) ──────────────────────────────────────
 @router.post("/webhook")
 async def vapi_webhook(request: Request, db: Session = Depends(get_db)):
-    """Receive end-of-call reports from Vapi and process them into the CRM."""
+    """Receive end-of-call reports from Vapi and process them into the CRM.
+
+    Secured by VAPI_WEBHOOK_SECRET when set: Vapi must send it in the
+    x-vapi-secret header (Vapi's "Server URL Secret") or as ?token=.
+    If the secret is unset the webhook stays open (backward compatible).
+    """
+    secret = settings.vapi_webhook_secret
+    if secret:
+        given = (request.headers.get("x-vapi-secret")
+                 or request.query_params.get("token") or "")
+        if not secrets.compare_digest(given, secret):
+            raise HTTPException(401, "Invalid webhook secret")
+    else:
+        print("⚠️  /calling/webhook is unauthenticated — set VAPI_WEBHOOK_SECRET "
+              "(and the matching Server URL Secret in Vapi) to secure it.")
     payload = await request.json()
     msg = payload.get("message", payload)
     event = msg.get("type", "")

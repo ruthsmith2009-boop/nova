@@ -304,8 +304,8 @@ def _send_lead_alert(to_email: str, lead, record, outcome: dict):
 <tr><td><b>Next Action:</b></td><td>{outcome.get('next_action','—')}</td></tr>
 </table>
 <p><b>Call Summary:</b><br>{record.custom_notes or '—'}</p>
-<p><a href="{record_link}">→ Open Lead Record in ARIA</a></p>
-<hr><p style="color:#888;font-size:12px">Sent automatically by ARIA AI Calling</p>"""
+<p><a href="{record_link}">→ Open Lead Record in {settings.business_name}</a></p>
+<hr><p style="color:#888;font-size:12px">Sent automatically by {settings.business_name} AI Calling</p>"""
 
     try:
         send_email(to_email, subject, body, record.lead_id)

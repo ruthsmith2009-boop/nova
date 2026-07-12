@@ -6,11 +6,11 @@ class Settings(BaseSettings):
     anthropic_api_key: str = ""
     tavily_api_key: str = ""
     sendgrid_api_key: str = ""
-    sendgrid_from_email: str = "ruth@example.com"
-    sendgrid_from_name: str = "Ruth Smith | AI With Ruth"
+    sendgrid_from_email: str = "owner@example.com"
+    sendgrid_from_name: str = "Your Business"
 
     # ── Google Workspace (one OAuth connects Gmail, Calendar, Drive, Contacts, Meet) ──
-    google_account_email: str = "aiwithruth@gmail.com"   # the Google account NOVA connects to
+    google_account_email: str = "owner@example.com"   # the Google account NOVA connects to
     google_oauth_client_id: Optional[str] = None
     google_oauth_client_secret: Optional[str] = None
     google_calendar_credentials_file: str = "credentials.json"
@@ -29,11 +29,13 @@ class Settings(BaseSettings):
     app_secret_key: str = "change-me"
     database_url: str = "sqlite:///./nova.db"
 
-    agent_name: str = "Ruth Smith"
+    # ── Identity / branding (set these in .env — defaults are neutral placeholders) ──
+    business_name: str = "NOVA"          # the app/brand name shown to the client
+    agent_name: str = "Your Name"        # owner / primary user
     agent_license: str = ""
-    broker_name: str = "AI With Ruth"
-    agent_phone: str = "(408) 555-0100"
-    agent_email: str = "aiwithruth@gmail.com"
+    broker_name: str = "Your Business"
+    agent_phone: str = "(555) 555-0100"
+    agent_email: str = "owner@example.com"
 
     primary_market: str = "United States (any industry)"
     openai_api_key: Optional[str] = None
@@ -72,6 +74,11 @@ class Settings(BaseSettings):
     # Shared secret for the inbound lead webhook (Zapier). If set, callers must pass ?token=
     leadgen_webhook_token: Optional[str] = None
 
+    # Shared secret for the Vapi call webhook. If set, Vapi must send it in the
+    # x-vapi-secret header (or ?token= query param) or the webhook returns 401.
+    # If unset, the webhook stays open (backward compatible) and logs a warning.
+    vapi_webhook_secret: str = ""
+
     # ── Automation platforms (no-code) ──
     # NOVA pushes events (new lead, booked job, missed call) to these webhook URLs so a
     # scenario/workflow can fan them out to any of 1000s of apps. Leave blank to show "Connect".
@@ -81,13 +88,22 @@ class Settings(BaseSettings):
 
     # Login wall for the deployed app. If both set, the dashboard + API require these.
     # Leave blank for local development (no login prompt).
-    aria_username: Optional[str] = None
-    aria_password: Optional[str] = None
+    # Reads APP_USERNAME / APP_PASSWORD, falling back to the legacy
+    # ARIA_USERNAME / ARIA_PASSWORD vars still set on existing deployments.
+    app_username: Optional[str] = None
+    app_password: Optional[str] = None
 
     # External storage connectors (optional — connect later with the user's accounts):
     dropbox_access_token: Optional[str] = None
 
     def model_post_init(self, __context) -> None:
+        import os
+        # Legacy login vars: existing deployments set ARIA_USERNAME/ARIA_PASSWORD.
+        # Prefer the new APP_USERNAME/APP_PASSWORD, but fall back so nothing breaks.
+        if not self.app_username:
+            self.app_username = os.environ.get("ARIA_USERNAME") or None
+        if not self.app_password:
+            self.app_password = os.environ.get("ARIA_PASSWORD") or None
         # On Railway the public URL is provided automatically as
         # RAILWAY_PUBLIC_DOMAIN (e.g. "aria-re-production.up.railway.app").
         # If public_base_url wasn't set explicitly, derive it from that so the

@@ -66,6 +66,7 @@ async def run_due_hunts() -> list[dict]:
             try:
                 ran.append(await run_one(hunt, db))
             except Exception as e:
+                traceback.print_exc()
                 hunt.last_status = f"error: {e}"
                 hunt.next_run = compute_next_run(hunt.frequency)  # back off, don't hammer
                 db.commit()

@@ -1,5 +1,5 @@
 """
-ARIA's AI Brain — routes tasks to the right model for cost efficiency.
+NOVA's AI Brain — routes tasks to the right model for cost efficiency.
 Complex tasks (docs, presentations, objection handling) → Claude Sonnet
 Research/data tasks → Claude Haiku
 """

@@ -91,8 +91,8 @@ async def get_report(db: Session = Depends(get_db)):
     return {"report": report, "summary": s}
 
 
-@router.post("/seed-aria-stack")
-def seed_aria_stack(db: Session = Depends(get_db)):
+@router.post("/seed-starter-stack")
+def seed_starter_stack(db: Session = Depends(get_db)):
     """Quick-add the NOVA tool stack as recurring expenses (editable estimates)."""
     added = []
     for item in NOVA_STACK:

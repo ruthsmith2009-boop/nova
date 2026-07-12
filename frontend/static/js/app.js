@@ -1328,9 +1328,9 @@ async function deleteExpense(id) {
   loadFinance();
 }
 
-async function seedAriaStack() {
+async function seedStarterStack() {
   try {
-    const res = await api('POST', '/finance/seed-aria-stack');
+    const res = await api('POST', '/finance/seed-starter-stack');
     showAlert(`Added ${res.added} NOVA tool costs (edit amounts as needed). ${res.skipped_existing} already tracked.`);
     loadFinance();
   } catch(e) { showAlert(e.message,'error','#exp-alert'); }
@@ -1357,12 +1357,26 @@ const pageRenderers = {
   finance: loadFinance,
 };
 
+// ─── Branding (from server config — white-label) ─────────────────────────────
+async function applyBranding() {
+  try {
+    const cfg = await api('GET', '/config');
+    const biz = cfg.business_name || 'NOVA';
+    document.title = `${biz} — AI Assistant for Small Business`;
+    const brand = document.getElementById('sidebar-brand-name');
+    if (brand) brand.textContent = biz;
+    const footer = document.getElementById('sidebar-footer-brand');
+    if (footer) footer.textContent = `${biz} v1.0${cfg.agent_name && cfg.agent_name !== 'Your Name' ? ' — ' + cfg.agent_name : ''}`;
+  } catch (e) { /* offline — keep static defaults */ }
+}
+
 // ─── Init ─────────────────────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
   let simpleOn = false;
   try { simpleOn = localStorage.getItem('nova_simple_mode') === '1'; } catch (e) {}
   if (simpleOn) document.body.classList.add('simple-mode');
   updateSimpleToggleLabel();
+  applyBranding();
   navigate(simpleOn ? 'simple' : 'dashboard');
   document.getElementById('alert-area').innerHTML = '';
 });

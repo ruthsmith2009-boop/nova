@@ -312,7 +312,7 @@ class Expense(Base):
 
 
 class ScheduledHunt(Base):
-    """A saved lead hunt that ARIA runs automatically on a cadence (hands-off auto-leads)."""
+    """A saved lead hunt that NOVA runs automatically on a cadence (hands-off auto-leads)."""
     __tablename__ = "scheduled_hunts"
 
     id = Column(Integer, primary_key=True, index=True)
@@ -438,5 +438,9 @@ def migrate():
             try:
                 conn.execute(text(stmt))
                 conn.commit()
-            except Exception:
-                pass  # column already exists — safe to ignore
+            except Exception as e:
+                # "duplicate column" just means the migration already ran — ignore.
+                # Anything else (locked db, syntax, disk) is a real problem — log it.
+                msg = str(e).lower()
+                if "duplicate column" not in msg and "already exists" not in msg:
+                    print(f"⚠️  Migration failed: {stmt} → {e}")

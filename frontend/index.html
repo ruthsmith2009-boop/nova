@@ -15,7 +15,7 @@
   <!-- Sidebar -->
   <nav class="sidebar">
     <div class="sidebar-logo">
-      <h1><span class="accent">NOVA</span></h1>
+      <h1><span class="accent" id="sidebar-brand-name">NOVA</span></h1>
       <div class="tagline">AI Assistant for Small Business</div>
     </div>
     <div class="sidebar-nav">
@@ -85,7 +85,7 @@
     </div>
     <div class="sidebar-footer">
       <button class="btn btn-ghost btn-sm" id="simple-toggle" onclick="toggleSimpleMode()" style="width:100%;margin-bottom:10px">✨ Switch to simple view</button>
-      <div>NOVA v1.0 — Ruth Smith</div>
+      <div id="sidebar-footer-brand">NOVA v1.0</div>
     </div>
   </nav>
 
@@ -338,7 +338,7 @@
             <div class="form-group"><label>Category (leave blank — AI will pick)</label><input id="exp-category" placeholder="Auto-categorized if blank"></div>
             <label style="display:flex;align-items:center;gap:8px;text-transform:none;font-weight:400;font-size:13px"><input type="checkbox" id="exp-deductible" checked style="width:auto"> Tax-deductible</label>
             <button class="btn btn-accent" style="width:100%;margin-top:12px" onclick="addExpense()">Add Expense</button>
-            <button class="btn btn-ghost" style="width:100%;margin-top:8px" onclick="seedAriaStack()">⚡ Quick-add NOVA tool costs</button>
+            <button class="btn btn-ghost" style="width:100%;margin-top:8px" onclick="seedStarterStack()">⚡ Quick-add NOVA tool costs</button>
           </div>
           <div class="card">
             <div class="card-header"><span class="card-title">📊 Spend Breakdown</span><button class="btn btn-ghost btn-sm" onclick="loadFinanceReport()">🧠 AI Report</button></div>
@@ -490,7 +490,7 @@
               <div class="form-group"><label>Call Window End</label><input id="camp-end" type="time" value="18:00"></div>
               <div class="form-group"><label>Max Attempts</label><input id="camp-attempts" type="number" value="3"></div>
             </div>
-            <div class="form-group"><label>Notify Email (when a lead is hot)</label><input id="camp-notify" type="email" placeholder="ruthsmith2009@gmail.com"></div>
+            <div class="form-group"><label>Notify Email (when a lead is hot)</label><input id="camp-notify" type="email" placeholder="owner@example.com"></div>
             <div class="alert alert-info" style="margin-bottom:16px">📋 Enrolled leads come from your current lead list. NOVA skips duplicate numbers automatically and respects your call window.</div>
             <button class="btn btn-accent" onclick="createCampaign()">✨ Generate Script & Create Campaign</button>
             <div id="campaign-script-preview" style="margin-top:16px"></div>

@@ -27,13 +27,13 @@ app = FastAPI(
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
-    allow_credentials=True,
+    allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
 # ── Login wall ────────────────────────────────────────────────────────────────
-# When ARIA_USERNAME + ARIA_PASSWORD are set (i.e. when deployed), the dashboard and
+# When APP_USERNAME + APP_PASSWORD are set (i.e. when deployed), the dashboard and
 # API require HTTP Basic Auth. Webhooks and health are exempt — external services
 # (Vapi, Zapier) must reach them, and they carry their own token security.
 import base64
@@ -43,8 +43,8 @@ PUBLIC_PATHS = ("/health", "/calling/webhook", "/leadgen/inbound")
 
 @app.middleware("http")
 async def basic_auth(request: Request, call_next):
-    user = settings.aria_username
-    pw = settings.aria_password
+    user = settings.app_username
+    pw = settings.app_password
     # No credentials configured (local dev) → no login required
     if not (user and pw):
         return await call_next(request)
@@ -95,11 +95,12 @@ async def startup():
     import asyncio
     from agents.scheduler import scheduler_loop
     asyncio.create_task(scheduler_loop())
-    print(f"✅ NOVA — AI Assistant for Small Business started")
+    port = os.environ.get("PORT", "8098")
+    print(f"✅ {settings.business_name} — AI Assistant for Small Business started")
     print(f"   Owner: {settings.agent_name} | {settings.broker_name}")
     print(f"   Focus: Universal sales & lead generation (any industry)")
     print(f"   Auto-hunt scheduler: running")
-    print(f"   API docs: http://localhost:8000/docs")
+    print(f"   API docs: http://localhost:{port}/docs")
 
 
 @app.get("/")
@@ -122,6 +123,7 @@ def health():
 @app.get("/config")
 def get_config():
     return {
+        "business_name": settings.business_name,
         "agent_name": settings.agent_name,
         "broker_name": settings.broker_name,
         "agent_email": settings.agent_email,
