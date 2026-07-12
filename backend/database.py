@@ -48,8 +48,6 @@ class Lead(Base):
     zip_code = Column(String(20))
     property_type = Column(String(50))
 
-    enrichment_confidence = Column(String(20), nullable=True)  # high | medium | low
-
     # Lead scoring fields
     score = Column(Float, default=0.0)
     score_reasons = Column(JSON, default=list)
@@ -346,7 +344,6 @@ def migrate():
         "ALTER TABLE leads ADD COLUMN temperature VARCHAR(20) DEFAULT 'cold'",
         "ALTER TABLE leads ADD COLUMN follow_up_cadence VARCHAR(30)",
         "ALTER TABLE leads ADD COLUMN state VARCHAR(20)",
-        "ALTER TABLE leads ADD COLUMN enrichment_confidence VARCHAR(20)",
         "ALTER TABLE leads ADD COLUMN is_deleted BOOLEAN DEFAULT 0",
         "ALTER TABLE leads ADD COLUMN deleted_at DATETIME",
         "ALTER TABLE leads ADD COLUMN assigned_to INTEGER",

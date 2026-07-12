@@ -96,33 +96,3 @@ industry. Never assume real estate."""
         return json.loads(result)
     except Exception:
         return [{"error": "Could not generate sequence", "raw": result[:300]}]
-
-
-async def write_listing_presentation(listing_data: dict, cma_data: dict, seller_data: dict) -> str:
-    """Generate a full sales proposal / pitch to win a client."""
-    return await think(
-        f"""Create a comprehensive sales proposal to win this client.
-
-Offer / scope: {json.dumps(listing_data, indent=2)}
-Pricing / numbers: {json.dumps(cma_data, indent=2)}
-Client: {json.dumps(seller_data, indent=2)}
-
-{BUSINESS_KNOWLEDGE}
-
-Write the complete proposal as {settings.agent_name}, {settings.broker_name}.
-
-Include all sections:
-1. **About Us** — track record, results, why you're credible
-2. **Your Situation** — the client's problem and the opportunity
-3. **Our Recommendation** — the plan and why it works
-4. **What We'll Do** — exactly how the work gets done, step by step
-5. **Pricing / Investment** — options and what each includes
-6. **Timeline** — week by week from start to result
-7. **What Makes Us Different** — specific differentiators, not generic claims
-8. **Results You Can Expect** — realistic outcomes (no unsubstantiated guarantees)
-9. **Next Steps** — the ask
-
-Format with clear headers. Write with confidence and specificity.
-This should be strong enough to win the client against a competitor.
-Use HTML formatting (<h2>, <h3>, <p>, <ul><li>, <strong>) for web rendering."""
-    )

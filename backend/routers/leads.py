@@ -512,7 +512,6 @@ def _serialize_lead(lead: Lead) -> dict:
         "state": lead.state,
         "zip_code": lead.zip_code,
         "property_type": lead.property_type,
-        "enrichment_confidence": lead.enrichment_confidence,
         "score": lead.score,
         "score_reasons": lead.score_reasons,
         "equity_estimate": lead.equity_estimate,
