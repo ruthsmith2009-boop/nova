@@ -7,59 +7,6 @@ from agents.brain import think, BUSINESS_KNOWLEDGE
 from config import settings
 
 
-async def write_mls_description(listing_data: dict) -> str:
-    """Write a compelling description of a product/service/offer."""
-    return await think(
-        f"""Write a compelling description of this offer/product/service for marketing.
-
-Offer: {json.dumps(listing_data, indent=2)}
-
-{BUSINESS_KNOWLEDGE}
-
-Rules for high-converting copy:
-- Open with the single most compelling benefit (NOT "Great service!")
-- Use vivid, specific language — not generic adjectives
-- Lead with what makes this DIFFERENT from competitors
-- Speak to the customer's real motivation (save time, save money, reduce stress)
-- Close with a clear call to action
-- Max 300 words
-- NO ALL CAPS, no exclamation-mark overload
-- Write for the ideal buyer, not everyone
-
-Return ONLY the description text, ready to use."""
-    )
-
-
-async def write_social_posts(listing_data: dict, mls_description: str = "") -> dict:
-    """Generate social media posts for a new offer/announcement."""
-    result = await think(
-        f"""Create social media posts for this offer by {settings.agent_name}.
-
-Offer: {json.dumps(listing_data, indent=2)}
-Description preview: {mls_description[:200] if mls_description else 'N/A'}
-
-{BUSINESS_KNOWLEDGE}
-
-Generate posts for each platform. Choose hashtags that fit the business/industry. Return as JSON:
-{{
-  "instagram_caption": "Compelling caption with line breaks and emoji. 150-200 words. End with hashtags.",
-  "instagram_hashtags": "8-12 relevant hashtags for this business",
-  "facebook_post": "Longer, more detailed post. Include key facts. 200-300 words. Conversational.",
-  "linkedin_post": "Professional angle. Value + details. 150 words. Good for referral network.",
-  "twitter_x_post": "Short punchy. Key point. CTA. Under 240 chars.",
-  "stories_text": "Short text for IG/FB stories overlay. 2-3 lines max.",
-  "offer_hook": "One compelling sentence for any platform",
-  "email_subject": "Subject line for an announcement email blast"
-}}""",
-        use_haiku=True
-    )
-
-    try:
-        return json.loads(result)
-    except Exception:
-        return {"error": "Could not generate social posts", "raw": result[:300]}
-
-
 async def write_weekly_newsletter(topic: str, context: dict = None) -> str:
     """Generate a weekly value newsletter for the business's audience (any industry)."""
     context = context or {}

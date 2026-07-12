@@ -48,12 +48,6 @@ class Lead(Base):
     zip_code = Column(String(20))
     property_type = Column(String(50))
 
-    # Property details (auto-filled from the address via enrichment; all editable)
-    lot_size = Column(String(50), nullable=True)
-    year_built = Column(Integer, nullable=True)
-    last_sold_price = Column(Float, nullable=True)
-    last_sold_date = Column(String(30), nullable=True)
-    property_enriched = Column(Boolean, default=False)
     enrichment_confidence = Column(String(20), nullable=True)  # high | medium | low
 
     # Lead scoring fields
@@ -352,11 +346,6 @@ def migrate():
         "ALTER TABLE leads ADD COLUMN temperature VARCHAR(20) DEFAULT 'cold'",
         "ALTER TABLE leads ADD COLUMN follow_up_cadence VARCHAR(30)",
         "ALTER TABLE leads ADD COLUMN state VARCHAR(20)",
-        "ALTER TABLE leads ADD COLUMN lot_size VARCHAR(50)",
-        "ALTER TABLE leads ADD COLUMN year_built INTEGER",
-        "ALTER TABLE leads ADD COLUMN last_sold_price FLOAT",
-        "ALTER TABLE leads ADD COLUMN last_sold_date VARCHAR(30)",
-        "ALTER TABLE leads ADD COLUMN property_enriched BOOLEAN DEFAULT 0",
         "ALTER TABLE leads ADD COLUMN enrichment_confidence VARCHAR(20)",
         "ALTER TABLE leads ADD COLUMN is_deleted BOOLEAN DEFAULT 0",
         "ALTER TABLE leads ADD COLUMN deleted_at DATETIME",
