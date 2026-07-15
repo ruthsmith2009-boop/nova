@@ -41,6 +41,9 @@ class Settings(BaseSettings):
     primary_market: str = "United States (any industry)"
     openai_api_key: Optional[str] = None
 
+    # ── Booking link (Calendly or any scheduler) — NOVA offers this when following up ──
+    calendly_url: str = ""               # e.g. https://calendly.com/aiwithruth/intro
+
     # Facebook / Instagram (Meta Graph API)
     facebook_page_access_token: Optional[str] = None
     facebook_page_id: Optional[str] = None

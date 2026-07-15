@@ -436,6 +436,12 @@ async def draft_followup(lead_id: int, channel: str = "auto", db: Session = Depe
         "email": "A short email. Start with 'Subject:' on its own line, then the body. Warm, concise, skimmable.",
         "call": "A 3-4 sentence phone opener plus one strong question to re-engage them. Not a full script.",
     }
+    from config import settings as _settings
+    booking_line = ""
+    if getattr(_settings, "calendly_url", ""):
+        booking_line = (f"If it moves things forward, invite them to book a quick call here: "
+                        f"{_settings.calendly_url} (include this link naturally in the message).\n")
+
     prompt = (
         f"Draft the next {channel} follow-up from a small-business owner to this lead. "
         f"Goal: build the relationship and move toward a booked call — helpful, never pushy.\n\n"
@@ -445,6 +451,7 @@ async def draft_followup(lead_id: int, channel: str = "auto", db: Session = Depe
         f"What they need / situation: {lead.life_event or 'unknown'}\n"
         f"Days since last contact: {days_since if days_since is not None else 'never contacted'}\n"
         f"Recent contact history: {history}\n\n"
+        f"{booking_line}"
         f"Format: {channel_rules.get(channel, channel_rules['text'])}\n"
         f"Output ONLY the message text — no preamble, no explanation."
     )
