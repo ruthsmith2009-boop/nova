@@ -40,16 +40,43 @@ import base64
 
 PUBLIC_PATHS = ("/health", "/calling/webhook", "/leadgen/inbound", "/sms/incoming")
 
+# Are we deployed on the public internet? Railway sets these automatically.
+# Used to decide what "no password configured" should mean (see below).
+IS_DEPLOYED = bool(
+    os.environ.get("RAILWAY_PUBLIC_DOMAIN")
+    or os.environ.get("RAILWAY_STATIC_URL")
+    or os.environ.get("RAILWAY_ENVIRONMENT")
+)
+
 
 @app.middleware("http")
 async def basic_auth(request: Request, call_next):
     user = settings.app_username
     pw = settings.app_password
-    # No credentials configured (local dev) → no login required
+    is_public_path = any(request.url.path.startswith(p) for p in PUBLIC_PATHS)
+
+    # No credentials configured. What that means depends on WHERE we are running.
+    #
+    # 2026-07-21 incident: NOVA ran on Railway with APP_USERNAME/APP_PASSWORD unset.
+    # This branch then let every request through, and /leads served real lead data
+    # (names, phones, emails) to anyone on the internet. No error, no log line —
+    # the login wall was installed and silently switched off.
+    #
+    # So: fail CLOSED when deployed, open only on a local machine.
     if not (user and pw):
+        if IS_DEPLOYED and not is_public_path:
+            return Response(
+                status_code=503,
+                content=(
+                    "Login is not configured, so this app is refusing to serve data.\n"
+                    "Set APP_USERNAME and APP_PASSWORD (or ARIA_USERNAME / ARIA_PASSWORD) "
+                    "in the hosting environment and redeploy."
+                ),
+            )
         return await call_next(request)
+
     # Public endpoints bypass the login wall
-    if any(request.url.path.startswith(p) for p in PUBLIC_PATHS):
+    if is_public_path:
         return await call_next(request)
 
     header = request.headers.get("Authorization", "")

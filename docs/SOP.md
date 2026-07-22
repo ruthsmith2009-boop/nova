@@ -8,7 +8,7 @@ it, and fix the things that commonly come up.
 
 ## 1. Where everything lives
 - **Code:** `~/nova/` (private GitHub repo: `github.com/ruthsmith2009-boop/nova`)
-- **Live site:** https://nova-production-fa97.up.railway.app
+- **Live site:** https://nova-production-12cd.up.railway.app
 - **Local dev:** http://127.0.0.1:8098
 - **Stack:** FastAPI + SQLite + Claude API. Frontend is static (`frontend/index.html`, `static/js/app.js`, `static/css/style.css`).
 - **Railway:** project `nova` (id `0fe63ee7-0f8a-402f-8ae2-374577473072`), service `nova` (id `48ea558b-a250-47da-8f2f-17ad5e2d3429`), environment `production`.
@@ -52,7 +52,7 @@ Each lead is a `POST /leads/` (auto-scored on arrival). Do them **sequentially**
 race and create duplicates.
 ```python
 import json, urllib.request, time
-B = "https://nova-production-fa97.up.railway.app"
+B = "https://nova-production-12cd.up.railway.app"
 leads = json.load(open("leads.json"))   # list of {first_name,last_name,email,phone,address(=company),city,...}
 for l in leads:
     req = urllib.request.Request(f"{B}/leads/", data=json.dumps(l).encode(),
@@ -64,7 +64,7 @@ Note: a lead's **company** is stored in the `address` field (the CRM's schema is
 
 ## 7. Health check
 ```bash
-B=https://nova-production-fa97.up.railway.app
+B=https://nova-production-12cd.up.railway.app
 for e in / /leads/ /leadgen/providers /coach/prompts /finance/summary /scripts/ /templates/; do
   curl -s -o /dev/null -w "%{http_code}  $e\n" "$B$e"; done
 ```
