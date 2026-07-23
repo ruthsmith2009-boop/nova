@@ -98,6 +98,13 @@ class Settings(BaseSettings):
     # ── Paid lead-data providers (optional — for verified business contacts w/ emails & phones) ──
     apollo_api_key: Optional[str] = None
 
+    # ── Zoho Mail (cold-email mailbox watched over IMAP — outreach + replies land in the CRM) ──
+    # ZOHO_APP_PASSWORD must be an app-specific password (Zoho Accounts → Security),
+    # never the real account password.
+    zoho_email: Optional[str] = None
+    zoho_app_password: Optional[str] = None
+    zoho_imap_host: str = "imap.zoho.com"
+
     # Shared secret for the inbound lead webhook (Zapier). If set, callers must pass ?token=
     leadgen_webhook_token: Optional[str] = None
 

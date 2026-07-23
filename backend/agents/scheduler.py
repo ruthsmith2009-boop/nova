@@ -75,11 +75,31 @@ async def run_due_hunts() -> list[dict]:
     return ran
 
 
+# Mailbox + Apollo sync cadence: hourly is plenty (Apollo caps sends at 5/day).
+SYNC_INTERVAL_SECONDS = 3600
+_last_sync = None
+
+
+async def run_syncs_if_due():
+    """Hourly: pull Apollo contacts + scan the Zoho mailbox. No-ops when keys are absent."""
+    global _last_sync
+    now = datetime.utcnow()
+    if _last_sync and (now - _last_sync).total_seconds() < SYNC_INTERVAL_SECONDS:
+        return
+    _last_sync = now
+    from agents.apollo_sync import sync_apollo_contacts
+    from agents.zoho_sync import sync_zoho_mailbox
+    # Both are blocking I/O — push them off the event loop.
+    await asyncio.to_thread(sync_apollo_contacts)
+    await asyncio.to_thread(sync_zoho_mailbox)
+
+
 async def scheduler_loop():
     """Background loop: wake every CHECK_INTERVAL_SECONDS and run due hunts."""
     while True:
         try:
             await run_due_hunts()
+            await run_syncs_if_due()
         except Exception:
             traceback.print_exc()
         await asyncio.sleep(CHECK_INTERVAL_SECONDS)

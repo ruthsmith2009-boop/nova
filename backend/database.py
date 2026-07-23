@@ -127,6 +127,23 @@ class EmailLog(Base):
     created_at = Column(DateTime, default=datetime.utcnow)
 
 
+class SyncedEmail(Base):
+    """One row per email seen in the Zoho mailbox — the dedupe ledger for zoho_sync.
+
+    message_id is the RFC Message-ID header, unique so a re-run never double-logs.
+    """
+    __tablename__ = "synced_emails"
+
+    id = Column(Integer, primary_key=True, index=True)
+    message_id = Column(String(500), unique=True, index=True)
+    direction = Column(String(20))  # inbound, outbound
+    lead_id = Column(Integer, ForeignKey("leads.id"), nullable=True)
+    address = Column(String(200))   # the other party's email address
+    subject = Column(String(500))
+    email_date = Column(DateTime, nullable=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+
 class CalendarEvent(Base):
     __tablename__ = "calendar_events"
 

@@ -7,8 +7,22 @@ this gives the UI + config foundation so turning one on later is just completing
 """
 from fastapi import APIRouter
 from config import settings
+from agents.apollo_sync import sync_apollo_contacts
+from agents.zoho_sync import sync_zoho_mailbox
 
 router = APIRouter(prefix="/integrations", tags=["integrations"])
+
+
+@router.post("/apollo/sync")
+def apollo_sync():
+    """Pull all saved Apollo contacts into the CRM (upsert by email, no duplicates)."""
+    return sync_apollo_contacts()
+
+
+@router.post("/zoho/sync")
+def zoho_sync():
+    """Scan the Zoho mailbox (Sent + Inbox) and log outreach + replies against leads."""
+    return sync_zoho_mailbox()
 
 
 def _c(value) -> bool:
@@ -73,6 +87,17 @@ def list_integrations():
             {"key": "twilio", "name": "Twilio (phone line)", "icon": "📞",
              "connected": _c(s.twilio_account_sid), "note": "The business phone number NOVA calls & texts from.",
              "env": "TWILIO_ACCOUNT_SID"},
+        ],
+        "outreach": [
+            {"key": "apollo", "name": "Apollo (lead data + sequences)", "icon": "🎯",
+             "connected": _c(s.apollo_api_key),
+             "note": "Sync your saved Apollo contacts into the CRM. POST /integrations/apollo/sync to pull.",
+             "env": "APOLLO_API_KEY"},
+            {"key": "zoho", "name": "Zoho Mail (cold-email mailbox)", "icon": "📬",
+             "connected": _c(s.zoho_email) and _c(s.zoho_app_password),
+             "account": s.zoho_email or "not connected",
+             "note": "Watches the sending mailbox — outreach is logged, replies flip leads to hot.",
+             "env": "ZOHO_EMAIL + ZOHO_APP_PASSWORD"},
         ],
         "automation": [
             {"key": "zapier", "name": "Zapier", "icon": "⚡",
