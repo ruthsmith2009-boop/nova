@@ -14,7 +14,7 @@ from fastapi.responses import FileResponse, Response
 from database import create_tables
 from routers import (
     leads, marketing, calendar, social, calling, leadgen, finance,
-    scripts, team, integrations, templates, coach, compliance, sms,
+    scripts, team, integrations, templates, coach, compliance, sms, voice,
 )
 from config import settings
 
@@ -38,7 +38,22 @@ app.add_middleware(
 # (Vapi, Zapier) must reach them, and they carry their own token security.
 import base64
 
-PUBLIC_PATHS = ("/health", "/calling/webhook", "/leadgen/inbound", "/sms/incoming")
+# Matched with startswith(). The /voice/* entries are the live mid-call booking
+# tools Vapi hits from the public internet during a phone call.
+#
+# Two traps, both of which only show up AFTER deploying:
+#   * Leave a Vapi-facing path out and it works perfectly on a laptop (no login
+#     is configured locally) then 401s in production — every call fails silently
+#     with the assistant going quiet mid-sentence.
+#   * List the prefix "/voice/" instead and you also expose /voice/status, which
+#     reports configuration. So each public voice route is named individually,
+#     and anything added under /voice later stays private unless listed here.
+#
+# These endpoints carry their own shared-secret check and refuse to run at all
+# in production when VAPI_WEBHOOK_SECRET is unset (see routers/voice.py).
+PUBLIC_PATHS = ("/health", "/calling/webhook", "/leadgen/inbound", "/sms/incoming",
+                "/voice/tools", "/voice/check-availability",
+                "/voice/book-appointment", "/voice/lookup-caller")
 
 # Are we deployed on the public internet? Railway sets these automatically.
 # Used to decide what "no password configured" should mean (see below).
@@ -109,6 +124,7 @@ app.include_router(templates.router)
 app.include_router(coach.router)
 app.include_router(compliance.router)
 app.include_router(sms.router)
+app.include_router(voice.router)
 
 # Serve frontend
 frontend_path = os.path.join(os.path.dirname(__file__), "..", "frontend")
@@ -121,13 +137,17 @@ async def startup():
     create_tables()
     # Hands-off auto-leads: background loop that runs saved hunts on their cadence.
     import asyncio
-    from agents.scheduler import scheduler_loop
+    from agents.scheduler import scheduler_loop, calendar_cache_loop
     asyncio.create_task(scheduler_loop())
+    # Keeps the Google busy-time cache fresh so live phone bookings never wait
+    # on Google's API mid-call.
+    asyncio.create_task(calendar_cache_loop())
     port = os.environ.get("PORT", "8098")
     print(f"✅ {settings.business_name} — AI Assistant for Small Business started")
     print(f"   Owner: {settings.agent_name} | {settings.broker_name}")
     print(f"   Focus: Universal sales & lead generation (any industry)")
     print(f"   Auto-hunt scheduler: running")
+    print(f"   Calendar availability cache: running")
     print(f"   API docs: http://localhost:{port}/docs")
 
 

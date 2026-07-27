@@ -1,6 +1,6 @@
 from sqlalchemy import (
     create_engine, Column, Integer, String, Float, DateTime, Text,
-    Boolean, JSON, ForeignKey
+    Boolean, JSON, ForeignKey, Index, text
 )
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, relationship
@@ -373,9 +373,158 @@ class Document(Base):
     retain_until = Column(DateTime, nullable=True)     # uploaded_at + 3 years (compliance)
 
 
+# ── Live phone booking (the AI receptionist) ──────────────────────────────────
+# All DateTime columns below are stored as NAIVE UTC, matching the rest of the app
+# (datetime.utcnow()). Business hours are the one exception: they are local
+# wall-clock strings, converted to UTC using BusinessProfile.timezone. Keeping the
+# conversion in exactly one place (agents/availability.py) is what stops the classic
+# "booked at the wrong hour" bug.
+
+class BusinessProfile(Base):
+    """One row (id=1). How this business books work — hours live in BusinessHours."""
+    __tablename__ = "business_profile"
+
+    id = Column(Integer, primary_key=True, index=True)
+    timezone = Column(String(64), default="America/Los_Angeles")
+    # How far ahead a caller must book. Stops someone booking 4 minutes from now.
+    booking_lead_time_minutes = Column(Integer, default=120)
+    # Candidate start times are generated on this grid (:00, :15, :30, :45).
+    slot_granularity_minutes = Column(Integer, default=15)
+    max_days_out = Column(Integer, default=30)
+    # How long a slot stays reserved mid-call while the caller decides.
+    hold_minutes = Column(Integer, default=3)
+    confirmation_template = Column(
+        Text,
+        default="You're booked for {service} on {when}. Reply STOP to opt out."
+    )
+    # What the AI does when a slot is taken out from under a caller mid-call.
+    double_booked_policy = Column(String(30), default="offer_next")  # offer_next | take_message
+
+    # Health of the Google busy-time cache. Written by refresh_busy_cache().
+    busy_cache_synced_at = Column(DateTime, nullable=True)
+    busy_cache_error = Column(String(500), default="")
+
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+
+class BusinessHours(Base):
+    """Open hours per weekday, in the business's local time. weekday: 0=Mon … 6=Sun."""
+    __tablename__ = "business_hours"
+
+    id = Column(Integer, primary_key=True, index=True)
+    weekday = Column(Integer, unique=True, index=True)
+    open_time = Column(String(5), default="09:00")   # local wall clock, "HH:MM"
+    close_time = Column(String(5), default="17:00")
+    closed = Column(Boolean, default=False)
+
+
+class ServiceType(Base):
+    """Something a caller can book. duration_minutes drives how long a slot must be."""
+    __tablename__ = "service_types"
+
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String(120))
+    duration_minutes = Column(Integer, default=60)
+    # How the AI describes it out loud. Callers can't see a screen.
+    spoken_description = Column(String(300), default="")
+    active = Column(Boolean, default=True)
+    sort = Column(Integer, default=0)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+
+class Appointment(Base):
+    """A booking. NOVA's own row is the system of record; Google gets a copy."""
+    __tablename__ = "appointments"
+
+    id = Column(Integer, primary_key=True, index=True)
+    service_id = Column(Integer, ForeignKey("service_types.id"), nullable=True)
+    lead_id = Column(Integer, ForeignKey("leads.id"), nullable=True)
+    call_record_id = Column(Integer, ForeignKey("call_records.id"), nullable=True)
+
+    start_time = Column(DateTime, index=True)   # naive UTC
+    end_time = Column(DateTime)                 # naive UTC
+    # Which chair/bay/person is busy. One-person businesses leave this alone.
+    resource = Column(String(80), default="default")
+
+    status = Column(String(20), default="held", index=True)  # held|booked|cancelled|completed
+    # A held row past this time is dead and is ignored when finding open slots,
+    # so a caller hanging up mid-booking can never permanently block a time.
+    hold_expires_at = Column(DateTime, nullable=True)
+
+    customer_name = Column(String(200), default="")
+    customer_phone = Column(String(50), default="")   # E.164
+    customer_email = Column(String(200), default="")
+    notes = Column(Text, default="")
+
+    google_event_id = Column(String(200), nullable=True)
+    sync_status = Column(String(20), default="pending")        # pending|synced|failed
+    confirmation_status = Column(String(20), default="pending")  # pending|sms|email|failed
+
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+
+# The double-booking fix. Two callers racing for the same time: the first INSERT wins,
+# the second raises IntegrityError, which the booking code catches and turns into
+# "sorry, that just got taken — how about 3:30?". Partial index so cancelled rows and
+# expired records don't block the slot forever.
+Index(
+    "ix_appointments_slot_unique",
+    Appointment.start_time, Appointment.resource,
+    unique=True,
+    sqlite_where=text("status IN ('held','booked')"),
+)
+
+
+class CalendarBusy(Base):
+    """Cached busy blocks pulled from Google every ~90s, so a live call never waits
+    on Google's API. Never treated as authoritative when stale — see availability.py."""
+    __tablename__ = "calendar_busy"
+
+    id = Column(Integer, primary_key=True, index=True)
+    start_time = Column(DateTime, index=True)   # naive UTC
+    end_time = Column(DateTime)                 # naive UTC
+    source = Column(String(40), default="google")
+    fetched_at = Column(DateTime, default=datetime.utcnow)
+
+
+def seed_booking_defaults():
+    """Give a fresh install working hours and one service, so the calendar can
+    actually book something. An empty hours table means every slot lookup returns
+    'closed' and the receptionist can never book anything — a confusing failure."""
+    db = SessionLocal()
+    try:
+        if not db.query(BusinessProfile).first():
+            db.add(BusinessProfile(id=1))
+
+        if not db.query(BusinessHours).first():
+            for weekday in range(7):
+                is_weekend = weekday >= 5
+                db.add(BusinessHours(
+                    weekday=weekday,
+                    open_time="09:00", close_time="17:00",
+                    closed=is_weekend,
+                ))
+
+        if not db.query(ServiceType).first():
+            db.add(ServiceType(
+                name="Appointment", duration_minutes=60,
+                spoken_description="a one hour appointment", active=True, sort=0,
+            ))
+
+        db.commit()
+    except Exception as e:
+        db.rollback()
+        print(f"⚠️  Booking defaults not seeded: {e}")
+    finally:
+        db.close()
+
+
 def create_tables():
     Base.metadata.create_all(bind=engine)
     migrate()
+    seed_booking_defaults()
 
 
 def migrate():

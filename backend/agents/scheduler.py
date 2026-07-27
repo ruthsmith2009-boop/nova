@@ -103,3 +103,31 @@ async def scheduler_loop():
         except Exception:
             traceback.print_exc()
         await asyncio.sleep(CHECK_INTERVAL_SECONDS)
+
+
+async def calendar_cache_loop():
+    """Keep the Google busy-time cache fresh for live phone bookings.
+
+    Deliberately a separate loop from scheduler_loop(): that one sleeps 10
+    minutes, and the availability code stops trusting a cache older than 10
+    minutes. Refreshing on the hunt loop's cadence would leave the receptionist
+    permanently on the edge of "stale" and refusing to book.
+
+    The Google call is blocking I/O, so it runs in a thread and never stalls
+    the web server mid-call.
+    """
+    from agents.availability import refresh_busy_cache, REFRESH_INTERVAL_SECONDS
+    from agents.booking import sweep_expired_holds, retry_failed_google_syncs
+
+    while True:
+        try:
+            await asyncio.to_thread(refresh_busy_cache)
+            # Retire holds nobody confirmed, so the slot leaves the unique index
+            # and the next caller can actually book it.
+            await asyncio.to_thread(sweep_expired_holds)
+            # A booking that never reached Google (outage, expired token) heals
+            # itself here instead of quietly missing from the business's calendar.
+            await asyncio.to_thread(retry_failed_google_syncs)
+        except Exception:
+            traceback.print_exc()
+        await asyncio.sleep(REFRESH_INTERVAL_SECONDS)
