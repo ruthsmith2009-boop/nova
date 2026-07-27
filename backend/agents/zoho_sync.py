@@ -58,6 +58,7 @@ def _process_folder(conn, folder: str, direction: str, db) -> dict:
         return {"folder": folder, "error": "search failed"}
 
     logged, matched_leads, already_seen = 0, 0, 0
+    seen_this_run = set()  # a folder can list the same Message-ID twice (e.g. DMARC reports)
     for num in data[0].split():
         status, msg_data = conn.fetch(num, "(BODY.PEEK[HEADER])")
         if status != "OK" or not msg_data or msg_data[0] is None:
@@ -67,9 +68,13 @@ def _process_folder(conn, folder: str, direction: str, db) -> dict:
         message_id = (msg.get("Message-ID") or "").strip()
         if not message_id:
             continue
+        if message_id in seen_this_run:
+            already_seen += 1
+            continue
         if db.query(SyncedEmail).filter(SyncedEmail.message_id == message_id).first():
             already_seen += 1
             continue
+        seen_this_run.add(message_id)
 
         # The counterparty: To for outbound, From for inbound.
         raw_addr = msg.get("To") if direction == "outbound" else msg.get("From")
@@ -123,9 +128,14 @@ def _process_folder(conn, folder: str, direction: str, db) -> dict:
                 lead.temperature = "hot"
             lead.updated_at = datetime.utcnow()
 
-        logged += 1
+        # Commit each message on its own so one odd row never rolls back the batch.
+        try:
+            db.commit()
+            logged += 1
+        except Exception:
+            db.rollback()
+            already_seen += 1
 
-    db.commit()
     return {"folder": folder, "logged": logged, "matched_leads": matched_leads,
             "already_seen": already_seen}
 
